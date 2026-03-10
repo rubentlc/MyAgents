@@ -1,0 +1,34 @@
+---
+applyTo: "**/*"
+description: "Use when triaging or fixing Checkmarx/security findings in pam-frontend while keeping all Copilot/MCP assets in pam-ai."
+---
+
+# PAM Frontend Security Execution Rules
+
+## Execution Mode
+- Default to triage-first: identify, prioritize, then patch.
+- Focus on high and critical findings first.
+- Keep each fix batch small and independently testable.
+
+## Change Strategy
+- For dependencies: prefer patch or minor upgrades first.
+- For major upgrades: isolate in a separate batch with explicit risk notes.
+- For source fixes: preserve existing architecture and coding patterns.
+
+## Validation
+- Run relevant checks after each batch when possible:
+  - `npm run build`
+  - `npm test`
+  - `npm lint`
+- If a check is skipped, explicitly state why.
+
+## Reporting Contract
+For each batch, provide:
+- Finding ids addressed
+- Files changed
+- Validation results
+- Residual risks and follow-up actions
+
+## Repository Separation
+- Do not add `.github` Copilot/MCP artifacts to `pam-frontend`.
+- Keep operational assets in `pam-ai`.
