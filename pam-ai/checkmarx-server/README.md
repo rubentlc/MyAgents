@@ -4,7 +4,7 @@ Servidor MCP para consultar projetos, scans e vulnerabilidades no Checkmarx One.
 
 ## Configuracao
 
-Preencha `mcp/checkmarx-server/.env`:
+Preencha `checkmarx-server/.env`:
 
 - `CHECKMARX_BASE_URL` (ex.: `https://eu.ast.checkmarx.net`)
 - `CHECKMARX_API_KEY`
@@ -16,10 +16,20 @@ Se sua instancia exigir outro formato, ajuste `CHECKMARX_AUTH_HEADER` e `CHECKMA
 ## Comandos
 
 ```bash
-npm run mcp:checkmarx:install
-npm run mcp:checkmarx:build
-npm run mcp:checkmarx:start
+cd checkmarx-server
+npm install
+npm run build
+npm run start
 ```
+
+## VS Code MCP (no pam-ai)
+
+Use `pam-ai/.vscode/mcp.json` com:
+
+- `command`: `node`
+- `args`: `${workspaceFolder}/checkmarx-server/dist/index.js`
+- `cwd`: `${workspaceFolder}/checkmarx-server`
+- `envFile`: `${workspaceFolder}/checkmarx-server/.env`
 
 ## Tools MCP
 

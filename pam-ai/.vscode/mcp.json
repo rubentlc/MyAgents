@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "checkmarx": {
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/checkmarx-server/dist/index.js"
+      ],
+      "cwd": "${workspaceFolder}/checkmarx-server",
+      "envFile": "${workspaceFolder}/checkmarx-server/.env"
+    }
+  }
+}

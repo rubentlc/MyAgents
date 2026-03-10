@@ -137,6 +137,29 @@ const tryJsonPaths = async (paths) => {
     }
     throw new Error(`All endpoint attempts failed:\n${errors.join("\n")}`);
 };
+const resolveLatestScanIdForProject = async (projectId) => {
+    const data = (await tryJsonPaths([
+        { path: "/api/scans", query: { "project-id": projectId, limit: 100 } },
+        { path: "/api/scans", query: { projectId, limit: 100 } },
+        { path: "/scans", query: { "project-id": projectId, limit: 100 } },
+        { path: "/scans", query: { projectId, limit: 100 } },
+    ]));
+    const scans = data.scans ?? [];
+    if (!scans.length) {
+        throw new Error(`No scans found for projectId: ${projectId}`);
+    }
+    const latest = scans
+        .filter((scan) => Boolean(scan.id))
+        .sort((a, b) => {
+        const aTime = a.createdAt ? Date.parse(a.createdAt) : 0;
+        const bTime = b.createdAt ? Date.parse(b.createdAt) : 0;
+        return bTime - aTime;
+    })[0];
+    if (!latest?.id) {
+        throw new Error(`Could not resolve latest scan id for projectId: ${projectId}`);
+    }
+    return latest.id;
+};
 const ListProjectsArgs = z.object({
     limit: z.number().int().positive().max(500).optional(),
 });
@@ -234,32 +257,52 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
         if (request.params.name === "checkmarx_list_scans") {
             const args = ListScansArgs.parse(request.params.arguments ?? {});
-            const query = { limit: args.limit ?? 100 };
+            const baseQuery = { limit: args.limit ?? 100 };
+            const queryCandidates = [baseQuery];
             if (args.projectId) {
-                query.projectId = args.projectId;
+                queryCandidates.unshift({ ...baseQuery, "project-id": args.projectId });
+                queryCandidates.unshift({ ...baseQuery, projectId: args.projectId });
             }
-            const data = await tryJsonPaths([
-                { path: "/api/scans", query },
-                { path: "/scans", query },
-            ]);
+            const pathCandidates = [];
+            for (const query of queryCandidates) {
+                pathCandidates.push({ path: "/api/scans", query });
+                pathCandidates.push({ path: "/scans", query });
+            }
+            const data = await tryJsonPaths(pathCandidates);
             return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
         }
         if (request.params.name === "checkmarx_list_vulnerabilities") {
             const args = ListVulnsArgs.parse(request.params.arguments ?? {});
-            const query = { limit: args.limit ?? 100 };
-            if (args.projectId)
-                query.projectId = args.projectId;
-            if (args.scanId)
-                query.scanId = args.scanId;
+            const baseQuery = { limit: args.limit ?? 100 };
             if (args.severity)
-                query.severity = args.severity;
+                baseQuery.severity = args.severity;
             if (args.state)
-                query.state = args.state;
-            const data = await tryJsonPaths([
-                { path: "/api/results", query },
-                { path: "/api/vulnerabilities", query },
-                { path: "/results", query },
-            ]);
+                baseQuery.state = args.state;
+            // Checkmarx /api/results requires scan-id. If only projectId is provided,
+            // resolve latest scan automatically to keep the tool ergonomic.
+            let scanId = args.scanId;
+            if (!scanId && args.projectId) {
+                scanId = await resolveLatestScanIdForProject(args.projectId);
+            }
+            const queryCandidates = [];
+            if (scanId) {
+                queryCandidates.push({ ...baseQuery, "scan-id": scanId });
+                queryCandidates.push({ ...baseQuery, scanId });
+            }
+            if (args.projectId) {
+                queryCandidates.push({ ...baseQuery, "project-id": args.projectId });
+                queryCandidates.push({ ...baseQuery, projectId: args.projectId });
+            }
+            if (!queryCandidates.length) {
+                queryCandidates.push(baseQuery);
+            }
+            const pathCandidates = [];
+            for (const query of queryCandidates) {
+                pathCandidates.push({ path: "/api/results", query });
+                pathCandidates.push({ path: "/api/vulnerabilities", query });
+                pathCandidates.push({ path: "/results", query });
+            }
+            const data = await tryJsonPaths(pathCandidates);
             return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
         }
         if (request.params.name === "checkmarx_raw_get") {
