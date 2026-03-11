@@ -7,6 +7,14 @@
       ],
       "cwd": "${workspaceFolder}/checkmarx-server",
       "envFile": "${workspaceFolder}/checkmarx-server/.env"
+    },
+    "sonarqube": {
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/sonarqube-server/dist/index.js"
+      ],
+      "cwd": "${workspaceFolder}/sonarqube-server",
+      "envFile": "${workspaceFolder}/sonarqube-server/.env"
     }
   }
 }
