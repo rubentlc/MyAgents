@@ -1,6 +1,6 @@
 ---
-name: checkmarx-pam-branch-fix
-description: "Use when you want automatic Checkmarx remediation for PAM frontend by branch: default to pam-frontend__expr, select latest scan for the input branch, filter high/critical findings, fix them in small batches, and validate build/test/lint."
+name: checkmarx-pmt-branch-fix
+description: "Use when you want automatic Checkmarx remediation for PMT frontend by branch: default to pmt-v2__expr, select latest scan for the input branch, filter high/critical findings, fix them in small batches, and validate build/test/lint."
 argument-hint: "Provide branch name (required). Optionally provide scan id to override latest scan selection."
 user-invocable: true
 ---
@@ -8,11 +8,11 @@ user-invocable: true
 # Checkmarx PAM Branch Remediation
 
 ## Purpose
-Run an end-to-end remediation workflow for `pam-frontend` using Checkmarx findings from a specific branch.
+Run an end-to-end remediation workflow for `frontend` using Checkmarx findings from a specific branch.
 
 ## Defaults
-- Target project name: `pam-frontend__expr`
-- Target project id: `291039a8-156d-488d-b2d9-2b77cbb4c6e6`
+- Target project name: `pmt-v2__expr`
+- Target project id: `73ccd21f-5e16-4ba2-b74b-27be2cd375cc`
 - Severities in scope: `critical`, then `high`
 - Validation commands:
   - `npm run build`
@@ -79,7 +79,7 @@ Run an end-to-end remediation workflow for `pam-frontend` using Checkmarx findin
 ## Decision Rules
 - If no high/critical findings exist for the scan, stop and report clean status.
 - If findings cannot be fixed safely in one pass, split into explicit follow-up batches.
-- Keep operational files in `pam-ai`; keep application code changes in `pam-frontend`.
+- Keep operational files in `pam-ai`; keep application code changes in `frontend`.
 
 ## Done Criteria
 - Selected scan is explicit and traceable to input branch.

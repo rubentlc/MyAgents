@@ -23,28 +23,42 @@ Provide a repeatable way to go from Checkmarx findings to validated fixes in thi
 - List project scans and choose target scan (latest stable scan by default).
 - Fetch vulnerabilities and keep original ids/status for traceability.
 
-2. Prioritize
+2. Apply muted exclusion and preview package scope
+- For dependency findings, build package scope using package status filter:
+  - `status: { in: ["SNOOZE", "MONITORED"] }`
+- Treat packages outside that set as muted/excluded for this workflow.
+- **First**: show the compact table. No code changes before this step. Table must include:
+  - package name
+  - package version
+  - severity
+  - finding ids
+- **Then** (only after the table is shown): ask for explicit user confirmation: `Proceed? (sim/nao)`.
+- If the user answers `nao`, stop and return only the filtered table and observations.
+
+3. Prioritize
 - Prioritize `critical` then `high`.
 - Inside each severity, prioritize exploitable and reachable findings first.
 - Defer low-impact findings when they require large breaking changes.
 
-3. Map findings to repo
+4. Map findings to repo
 - For dependency findings: map package names to `package.json` and lockfile.
 - For code findings: locate exact file/function and confirm current behavior.
 
-4. Remediate with minimal risk
-- Prefer patch/minor dependency updates first.
+5. Remediate with minimal risk
+- Use `data.recommendedVersion` from the Checkmarx finding as the **minimum** safe version.
+- Always check `npm info <pkg> dist-tags.latest` and use the **latest patch** within the same major, not just the minimum.
 - For major updates, isolate into a separate small batch with explicit risk note.
 - For code fixes, keep changes targeted and aligned with existing patterns.
 
-5. Validate
+6. Validate
 - Run relevant checks after each batch:
   - `npm run build`
   - `npm test` (or focused tests)
   - `npm lint`
 - If a command is skipped, record why.
 
-6. Report
+7. Report
+- Filter used for package status and confirmation decision (`sim/nao`).
 - Findings addressed (ids/severity)
 - Files changed
 - Validation results
@@ -56,6 +70,7 @@ Provide a repeatable way to go from Checkmarx findings to validated fixes in thi
 - Prefer reversible batches so rollback is simple.
 
 ## Done Criteria
+- Filtered package table was shown and explicitly approved by the user before remediation.
 - High/critical set has a clear remediation status.
 - Code compiles and no obvious lint/test regressions were introduced.
 - Final report is traceable from finding -> change -> validation.
