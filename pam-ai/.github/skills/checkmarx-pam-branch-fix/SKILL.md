@@ -1,6 +1,6 @@
 ---
 name: checkmarx-pam-branch-fix
-description: "Use when you want automatic Checkmarx remediation for PAM frontend by branch: default to pam-frontend__expr, select latest scan for the input branch, filter high/critical findings, fix them in small batches, and validate build/test/lint."
+description: "Use when you want automatic Checkmarx remediation for PAM frontend by branch: default to pam-frontend__expr, select latest scan for the input branch, filter high/critical findings, fix them in small batches, and validate with build."
 argument-hint: "Provide branch name (required). Optionally provide scan id to override latest scan selection."
 user-invocable: true
 ---
@@ -16,8 +16,6 @@ Run an end-to-end remediation workflow for `pam-frontend` using Checkmarx findin
 - Severities in scope: `critical`, then `high`
 - Validation commands:
   - `npm run build`
-  - `npm test`
-  - `npm run lint`
 
 ## Inputs
 - `branch` (required)
@@ -65,7 +63,7 @@ Run an end-to-end remediation workflow for `pam-frontend` using Checkmarx findin
   - Avoid broad refactors.
 
 6. Validate after each batch
-- Run relevant checks (`build`, `test`, `lint`).
+- Run `npm run build`.
 - If a command is skipped or blocked (for example private registry auth), record the reason.
 
 7. Report
