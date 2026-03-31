@@ -1,20 +1,20 @@
-{
+qual a dizerença ent{
   "servers": {
     "checkmarx": {
       "command": "node",
       "args": [
-        "${workspaceFolder}/checkmarx-server/dist/index.js"
+        "${workspaceFolder}/mcp-servers/checkmarx/dist/index.js"
       ],
-      "cwd": "${workspaceFolder}/checkmarx-server",
-      "envFile": "${workspaceFolder}/checkmarx-server/.env"
+      "cwd": "${workspaceFolder}/mcp-servers/checkmarx",
+      "envFile": "${workspaceFolder}/mcp-servers/checkmarx/.env"
     },
     "sonarqube": {
       "command": "node",
       "args": [
-        "${workspaceFolder}/sonarqube-server/dist/index.js"
+        "${workspaceFolder}/mcp-servers/sonarqube/dist/index.js"
       ],
-      "cwd": "${workspaceFolder}/sonarqube-server",
-      "envFile": "${workspaceFolder}/sonarqube-server/.env"
+      "cwd": "${workspaceFolder}/mcp-servers/sonarqube",
+      "envFile": "${workspaceFolder}/mcp-servers/sonarqube/.env"
     }
   }
 }
