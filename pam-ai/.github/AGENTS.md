@@ -9,6 +9,9 @@
 ## i18n Auditor Agent
 - `pam-i18n-auditor`: Use when you want to scan a whole flow or component area for untranslated strings and fix everything in one pass across EN/ES/FR locales. Invoke **manually** when the scope is larger than a single component.
 
+## Backend Agent
+- `pam-be-engineer`: Use when implementing, debugging, or refactoring features in `pam-backend` (.NET 10 microservices). Covers GraphQL resolvers, MediatR handlers, gRPC proto changes, Dynamics 365 integration, MongoDB, Kafka, tests, and build fixes.
+
 ## Shared Rules
 - Operational assets stay in `pam-ai`.
 - `pam-frontend` remains focused on app code.
