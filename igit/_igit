@@ -8,10 +8,11 @@ _igit() {
     "hotfix: igit hotfix <number?> <name?> --base? <branch> "
     "bugfix: igit bugfix <number?> <name?> --base? <branch> "
     "spike: igit spike <number?> <name?> --base? <branch> "
-    "commit: igit commit [-w <worktree>] <feature/...> <message>"
+    "commit: igit commit [-w <worktree>] <message>"
+    "undo-commit: igit undo-commit [-w <worktree>]"
     "merge-into: igit merge-into [-w <worktree>] <branch>"
-    "open: igit open [-w <worktree>]"
-    "delete: igit delete [-w <worktree>]"
+    "open: igit open [-w <worktree>] | igit open to list worktrees"
+    "delete: igit delete [--force] [-w <worktree>]"
     "list: list all worktrees"
   )
 
@@ -39,13 +40,19 @@ _igit() {
     | sed 's#^origin/##' \
     | grep -v '^HEAD$')"})
 
+  local -a delete_options
+  delete_options=(
+    "-w:target worktree"
+    "--force:force worktree removal"
+  )
+
   # ----------------------------
   # completion per command
   # ----------------------------
 
   case "$cmd" in
 
-    open|delete)
+    open)
       if (( CURRENT == 3 )); then
         _describe 'options' "-w:target worktree"
         _describe 'worktrees' feats
@@ -54,10 +61,31 @@ _igit() {
       fi
       ;;
 
+    delete)
+      if (( CURRENT == 3 )); then
+        _describe 'options' delete_options
+        _describe 'worktrees' feats
+      elif (( CURRENT == 4 )) && [[ "${words[3]}" == "-w" ]]; then
+        _describe 'worktrees' feats
+      elif (( CURRENT == 4 )) && [[ "${words[3]}" == "--force" ]]; then
+        _describe 'options' "-w:target worktree"
+        _describe 'worktrees' feats
+      elif (( CURRENT == 5 )) && [[ "${words[3]}" == "--force" ]] && [[ "${words[4]}" == "-w" ]]; then
+        _describe 'worktrees' feats
+      fi
+      ;;
+
     commit)
       if (( CURRENT == 3 )); then
         _describe 'options' "-w:target worktree"
+      elif (( CURRENT == 4 )) && [[ "${words[3]}" == "-w" ]]; then
         _describe 'worktrees' feats
+      fi
+      ;;
+
+    undo-commit)
+      if (( CURRENT == 3 )); then
+        _describe 'options' "-w:target worktree"
       elif (( CURRENT == 4 )) && [[ "${words[3]}" == "-w" ]]; then
         _describe 'worktrees' feats
       fi

@@ -118,7 +118,45 @@ if [ "$CMD" = "open" ]; then
     WORKTREE_QUERY="$LEGACY_QUERY"
   fi
 
-  PATH_DIR=$(resolve_worktree "$WORKTREE_QUERY")
+  if [ -z "$WORKTREE_QUERY" ]; then
+    if ! command -v fzf >/dev/null 2>&1; then
+      echo "❌ fzf is required for interactive selection"
+      echo "Install fzf or use: igit open -w <worktree>"
+      exit 1
+    fi
+
+    WORKTREE_SELECTION=$(git worktree list --porcelain \
+      | awk '
+          /^worktree / {
+            path=$2
+            label=path
+            if (path ~ /\/feat\//) {
+              sub(/^.*\/feat\//, "", label)
+            }
+            print label "\t" path
+          }
+        ')
+
+    if [ -z "$WORKTREE_SELECTION" ]; then
+      echo "❌ no worktrees found"
+      exit 1
+    fi
+
+    PICK=$(printf "%s\n" "$WORKTREE_SELECTION" | fzf \
+      --height=40% \
+      --layout=reverse \
+      --prompt="Select worktree > " \
+      --with-nth=1,2)
+
+    if [ -z "$PICK" ]; then
+      echo "❌ canceled"
+      exit 1
+    fi
+
+    PATH_DIR=$(printf "%s" "$PICK" | awk -F '\t' '{print $NF}')
+  else
+    PATH_DIR=$(resolve_worktree "$WORKTREE_QUERY")
+  fi
 
   if [ -z "$PATH_DIR" ]; then
     echo "❌ not found"
@@ -160,7 +198,45 @@ if [ "$CMD" = "delete" ]; then
     WORKTREE_QUERY="$LEGACY_QUERY"
   fi
 
-  PATH_DIR=$(resolve_worktree "$WORKTREE_QUERY")
+  if [ -z "$WORKTREE_QUERY" ]; then
+    if ! command -v fzf >/dev/null 2>&1; then
+      echo "❌ fzf is required for interactive selection"
+      echo "Install fzf or use: igit delete -w <worktree>"
+      exit 1
+    fi
+
+    WORKTREE_SELECTION=$(git worktree list --porcelain \
+      | awk '
+          /^worktree / {
+            path=$2
+            label=path
+            if (path ~ /\/feat\//) {
+              sub(/^.*\/feat\//, "", label)
+            }
+            print label "\t" path
+          }
+        ')
+
+    if [ -z "$WORKTREE_SELECTION" ]; then
+      echo "❌ no worktrees found"
+      exit 1
+    fi
+
+    PICK=$(printf "%s\n" "$WORKTREE_SELECTION" | fzf \
+      --height=40% \
+      --layout=reverse \
+      --prompt="Select worktree to delete > " \
+      --with-nth=1,2)
+
+    if [ -z "$PICK" ]; then
+      echo "❌ canceled"
+      exit 1
+    fi
+
+    PATH_DIR=$(printf "%s" "$PICK" | awk -F '\t' '{print $NF}')
+  else
+    PATH_DIR=$(resolve_worktree "$WORKTREE_QUERY")
+  fi
 
   if [ -z "$PATH_DIR" ]; then
     echo "❌ not found"
@@ -216,7 +292,7 @@ if [ "$CMD" = "delete" ]; then
 fi
 
 # ----------------------------
-# COMMIT (SMART + PUSH)
+# COMMIT (STAGED + PUSH)
 # ----------------------------
 if [ "$CMD" = "commit" ]; then
   WORKTREE_QUERY=""
@@ -233,12 +309,10 @@ if [ "$CMD" = "commit" ]; then
     esac
   done
 
-  TYPE="$1"
-  shift
   RAW_MSG="$*"
 
-  if [ -z "$TYPE" ] || [ -z "$RAW_MSG" ]; then
-    echo "❌ usage: igit commit [-w <worktree>] <feature/...> <message>"
+  if [ -z "$RAW_MSG" ]; then
+    echo "❌ usage: igit commit [-w <worktree>] <message>"
     exit 1
   fi
 
@@ -254,7 +328,13 @@ if [ "$CMD" = "commit" ]; then
     exit 1
   fi
 
-  TICKET=$(echo "$TYPE" | grep -oE '[0-9]+' | head -n 1)
+  BRANCH_NAME=$(git -C "$PATH_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null)
+  if [ -z "$BRANCH_NAME" ]; then
+    echo "❌ could not determine branch for worktree"
+    exit 1
+  fi
+
+  TICKET=$(echo "$BRANCH_NAME" | grep -oE '[0-9]+' | head -n 1)
   [ -z "$TICKET" ] && TICKET="no-ticket"
 
   MSG="[FE] $RAW_MSG #$TICKET"
@@ -272,7 +352,11 @@ if [ "$CMD" = "commit" ]; then
   (
     cd "$PATH_DIR" || exit 1
 
-    git add . || exit 1
+    if git diff --cached --quiet; then
+      echo "❌ no staged changes to commit"
+      exit 1
+    fi
+
     git commit -m "$MSG" || exit 1
 
     if confirm "Push?"; then
@@ -286,6 +370,72 @@ if [ "$CMD" = "commit" ]; then
     exit 1
   fi
 
+  exit 0
+fi
+
+# ----------------------------
+# UNDO LAST COMMIT
+# ----------------------------
+if [ "$CMD" = "undo-commit" ]; then
+  WORKTREE_QUERY=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -w)
+        WORKTREE_QUERY="$2"
+        shift 2
+        ;;
+      *)
+        echo "❌ usage: igit undo-commit [-w <worktree>]"
+        exit 1
+        ;;
+    esac
+  done
+
+  PATH_DIR=$(resolve_worktree "$WORKTREE_QUERY")
+
+  if [ -z "$PATH_DIR" ]; then
+    echo "❌ worktree not found"
+    exit 1
+  fi
+
+  if [ ! -d "$PATH_DIR" ]; then
+    echo "❌ invalid worktree path"
+    exit 1
+  fi
+
+  LAST_COMMIT=$(git -C "$PATH_DIR" log -1 --pretty=%s 2>/dev/null)
+  if [ -z "$LAST_COMMIT" ]; then
+    echo "❌ no commits found in worktree"
+    exit 1
+  fi
+
+  if ! git -C "$PATH_DIR" rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+    echo "❌ cannot undo the initial commit with this command"
+    exit 1
+  fi
+
+  echo ""
+  echo "👉 Worktree: $PATH_DIR"
+  echo "↩️ Undo last commit: $LAST_COMMIT"
+  echo "ℹ️ Changes will remain staged"
+  echo ""
+
+  if ! confirm "Undo last commit?"; then
+    exit 0
+  fi
+
+  (
+    cd "$PATH_DIR" || exit 1
+    git reset --soft HEAD~1 || exit 1
+  )
+
+  if [ $? -ne 0 ]; then
+    echo "❌ undo commit failed"
+    exit 1
+  fi
+
+  echo "✅ last commit undone"
   exit 0
 fi
 

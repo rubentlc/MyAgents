@@ -15,6 +15,11 @@ Use `pam-ai` as the operational layer (prompts, skills, MCP and automation) and 
 4. Validate with relevant commands (`build`, `test`, `lint`) when available.
 5. Report findings and residual risk clearly.
 
+## Change Scope Discipline
+- Do not perform unsolicited refactors.
+- Implement only the exact scope explicitly requested by the user.
+- If a broader refactor seems beneficial, ask for explicit approval before making any such changes.
+
 ## Backend Architecture Reference (pam-backend)
 - **.NET 10**, 9 microservices + shared libraries
 - **PAM.Gateway**: public GraphQL (HotChocolate stitching) + SignalR; Kerberos/Negotiate auth
