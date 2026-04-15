@@ -1,0 +1,84 @@
+#compdef igit
+
+_igit() {
+  local -a commands
+
+  commands=(
+    "feature: igit feature <number?> <name?> --base? <branch> "
+    "hotfix: igit hotfix <number?> <name?> --base? <branch> "
+    "bugfix: igit bugfix <number?> <name?> --base? <branch> "
+    "spike: igit spike <number?> <name?> --base? <branch> "
+    "commit: igit commit [-w <worktree>] <feature/...> <message>"
+    "merge-into: igit merge-into [-w <worktree>] <branch>"
+    "open: igit open [-w <worktree>]"
+    "delete: igit delete [-w <worktree>]"
+    "list: list all worktrees"
+  )
+
+  # ----------------------------
+  # first argument = command
+  # ----------------------------
+  if (( CURRENT == 2 )); then
+    _describe 'command' commands
+    return
+  fi
+
+  local cmd="${words[2]}"
+
+  # ----------------------------
+  # WORKTREE COMPLETION SOURCE
+  # ----------------------------
+  local -a feats
+  feats=(${(f)"$(git worktree list --porcelain 2>/dev/null \
+    | awk '/^worktree / {print $2}' \
+    | grep '/feat/' \
+    | sed 's#.*/feat/##')"})
+
+  local -a origin_branches
+  origin_branches=(${(f)"$(git for-each-ref --format='%(refname:short)' refs/remotes/origin 2>/dev/null \
+    | sed 's#^origin/##' \
+    | grep -v '^HEAD$')"})
+
+  # ----------------------------
+  # completion per command
+  # ----------------------------
+
+  case "$cmd" in
+
+    open|delete)
+      if (( CURRENT == 3 )); then
+        _describe 'options' "-w:target worktree"
+        _describe 'worktrees' feats
+      elif (( CURRENT == 4 )) && [[ "${words[3]}" == "-w" ]]; then
+        _describe 'worktrees' feats
+      fi
+      ;;
+
+    commit)
+      if (( CURRENT == 3 )); then
+        _describe 'options' "-w:target worktree"
+        _describe 'worktrees' feats
+      elif (( CURRENT == 4 )) && [[ "${words[3]}" == "-w" ]]; then
+        _describe 'worktrees' feats
+      fi
+      ;;
+
+    merge-into)
+      if (( CURRENT == 3 )); then
+        _describe 'options' "-w:target worktree"
+        _describe 'branches' origin_branches
+      elif (( CURRENT == 4 )) && [[ "${words[3]}" == "-w" ]]; then
+        _describe 'worktrees' feats
+      elif (( CURRENT == 5 )) && [[ "${words[3]}" == "-w" ]]; then
+        _describe 'branches' origin_branches
+      fi
+      ;;
+
+    feature|hotfix|bugfix|spike)
+      # no completion for creation name
+      ;;
+
+  esac
+}
+
+_igit "$@"

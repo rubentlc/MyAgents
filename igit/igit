@@ -1,0 +1,372 @@
+#!/bin/bash
+
+BASE_DEFAULT="main"
+FEATURE_DIR="../feat"
+
+CMD=$1
+shift
+
+# ----------------------------
+# HELPERS
+# ----------------------------
+normalize_name() {
+  echo "$*" | tr ' ' '_' | tr '[:upper:]' '[:lower:]'
+}
+
+confirm() {
+  read -p "$1 [y/N]: " RESP
+  RESP=${RESP:-n}
+  [[ "$RESP" == "y" || "$RESP" == "Y" ]]
+}
+
+get_worktree_path() {
+  git worktree list --porcelain \
+    | awk '/worktree/ {print $2}'
+}
+
+get_main_worktree_path() {
+  get_worktree_path | head -n 1
+}
+
+find_worktree() {
+  local query="$1"
+  get_worktree_path | grep "$query" | head -n 1
+}
+
+resolve_worktree() {
+  local query="$1"
+
+  if [ -z "$query" ]; then
+    echo "$PWD"
+    return
+  fi
+
+  find_worktree "$query"
+}
+
+# ----------------------------
+# CREATE WORKTREE
+# ----------------------------
+if [[ "$CMD" == "feature" || "$CMD" == "hotfix" || "$CMD" == "bugfix" || "$CMD" == "spike" ]]; then
+
+  TYPE=$CMD
+  BASE=$BASE_DEFAULT
+
+  ARGS=()
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --base)
+        BASE="$2"
+        shift 2
+        ;;
+      *)
+        ARGS+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  NAME=$(normalize_name "${ARGS[*]}")
+
+  BRANCH="$TYPE/$NAME"
+  PATH_DIR="$FEATURE_DIR/$BRANCH"
+
+  echo ""
+  echo "👉 Type:   $TYPE"
+  echo "👉 Base:   $BASE"
+  echo "👉 Branch: $BRANCH"
+  echo "👉 Path:   $PATH_DIR"
+  echo ""
+
+  if [ -d "$PATH_DIR" ]; then
+    echo "⚠️ already exists"
+    exit 1
+  fi
+
+  if ! confirm "Create worktree?"; then
+    exit 0
+  fi
+
+  git worktree add -b "$BRANCH" "$PATH_DIR" "$BASE"
+
+  echo "✅ created"
+  exit 0
+fi
+
+# ----------------------------
+# OPEN
+# ----------------------------
+if [ "$CMD" = "open" ]; then
+  WORKTREE_QUERY=""
+  LEGACY_QUERY=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -w)
+        WORKTREE_QUERY="$2"
+        shift 2
+        ;;
+      *)
+        LEGACY_QUERY="$1"
+        shift
+        ;;
+    esac
+  done
+
+  if [ -z "$WORKTREE_QUERY" ] && [ -n "$LEGACY_QUERY" ]; then
+    WORKTREE_QUERY="$LEGACY_QUERY"
+  fi
+
+  PATH_DIR=$(resolve_worktree "$WORKTREE_QUERY")
+
+  if [ -z "$PATH_DIR" ]; then
+    echo "❌ not found"
+    exit 1
+  fi
+
+  code -n "$PATH_DIR"
+  exit 0
+fi
+
+# ----------------------------
+# DELETE
+# ----------------------------
+if [ "$CMD" = "delete" ]; then
+  WORKTREE_QUERY=""
+  LEGACY_QUERY=""
+  USED_W=0
+  FORCE_DELETE=0
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -w)
+        WORKTREE_QUERY="$2"
+        USED_W=1
+        shift 2
+        ;;
+      --force)
+        FORCE_DELETE=1
+        shift
+        ;;
+      *)
+        LEGACY_QUERY="$1"
+        shift
+        ;;
+    esac
+  done
+
+  if [ -z "$WORKTREE_QUERY" ] && [ -n "$LEGACY_QUERY" ]; then
+    WORKTREE_QUERY="$LEGACY_QUERY"
+  fi
+
+  PATH_DIR=$(resolve_worktree "$WORKTREE_QUERY")
+
+  if [ -z "$PATH_DIR" ]; then
+    echo "❌ not found"
+    exit 1
+  fi
+
+  MAIN_WORKTREE_PATH=$(get_main_worktree_path)
+
+  if [ "$USED_W" -eq 0 ] && [ "$PATH_DIR" = "$MAIN_WORKTREE_PATH" ]; then
+    echo ""
+    echo "⚠️ main worktree detected"
+    echo "Use -w explicitly when deleting the main worktree."
+    echo "Example: igit delete -w <worktree>"
+    echo ""
+
+    read -p "Type DELETE_MAIN to continue: " MAIN_CONFIRM
+    if [ "$MAIN_CONFIRM" != "DELETE_MAIN" ]; then
+      echo "❌ canceled"
+      exit 1
+    fi
+  fi
+
+  echo ""
+  echo "🗑 deleting:"
+  echo "$PATH_DIR"
+  if [ "$FORCE_DELETE" -eq 1 ]; then
+    echo "⚠️ mode: force"
+  fi
+  echo ""
+
+  if ! confirm "Are you sure?"; then
+    exit 0
+  fi
+
+  REMOVE_ARGS=()
+  if [ "$FORCE_DELETE" -eq 1 ]; then
+    REMOVE_ARGS+=(--force)
+  fi
+
+  git worktree remove "${REMOVE_ARGS[@]}" "$PATH_DIR"
+
+  if [ $? -ne 0 ]; then
+    echo "❌ delete failed"
+    exit 1
+  fi
+
+  if [ -e "$PATH_DIR" ]; then
+    rm -rf "$PATH_DIR"
+  fi
+
+  echo "✅ deleted"
+  exit 0
+fi
+
+# ----------------------------
+# COMMIT (SMART + PUSH)
+# ----------------------------
+if [ "$CMD" = "commit" ]; then
+  WORKTREE_QUERY=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -w)
+        WORKTREE_QUERY="$2"
+        shift 2
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+
+  TYPE="$1"
+  shift
+  RAW_MSG="$*"
+
+  if [ -z "$TYPE" ] || [ -z "$RAW_MSG" ]; then
+    echo "❌ usage: igit commit [-w <worktree>] <feature/...> <message>"
+    exit 1
+  fi
+
+  PATH_DIR=$(resolve_worktree "$WORKTREE_QUERY")
+
+  if [ -z "$PATH_DIR" ]; then
+    echo "❌ worktree not found"
+    exit 1
+  fi
+
+  if [ ! -d "$PATH_DIR" ]; then
+    echo "❌ invalid worktree path"
+    exit 1
+  fi
+
+  TICKET=$(echo "$TYPE" | grep -oE '[0-9]+' | head -n 1)
+  [ -z "$TICKET" ] && TICKET="no-ticket"
+
+  MSG="[FE] $RAW_MSG #$TICKET"
+
+  echo ""
+  echo "👉 Worktree: $PATH_DIR"
+  echo "🧠 Commit message:"
+  echo "$MSG"
+  echo ""
+
+  if ! confirm "Commit?"; then
+    exit 0
+  fi
+
+  (
+    cd "$PATH_DIR" || exit 1
+
+    git add . || exit 1
+    git commit -m "$MSG" || exit 1
+
+    if confirm "Push?"; then
+      git push origin HEAD || exit 1
+      echo "🚀 pushed"
+    fi
+  )
+
+  if [ $? -ne 0 ]; then
+    echo "❌ commit/push failed"
+    exit 1
+  fi
+
+  exit 0
+fi
+
+# ----------------------------
+# MERGE INTO WORKTREE
+# ----------------------------
+if [ "$CMD" = "merge-into" ]; then
+  WORKTREE_QUERY=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -w)
+        WORKTREE_QUERY="$2"
+        shift 2
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+
+  SOURCE_BRANCH="$1"
+
+  if [ -z "$SOURCE_BRANCH" ]; then
+    echo "❌ usage: igit merge-into [-w <worktree>] <branch>"
+    exit 1
+  fi
+
+  PATH_DIR=$(resolve_worktree "$WORKTREE_QUERY")
+
+  if [ -z "$PATH_DIR" ]; then
+    echo "❌ worktree not found"
+    exit 1
+  fi
+
+  if [ ! -d "$PATH_DIR" ]; then
+    echo "❌ invalid worktree path"
+    exit 1
+  fi
+
+  echo ""
+  echo "👉 Worktree: $PATH_DIR"
+  echo "👉 Merge:    origin/$SOURCE_BRANCH"
+  echo ""
+
+  if ! confirm "Proceed with fetch + merge?"; then
+    exit 0
+  fi
+
+  (
+    cd "$PATH_DIR" || exit 1
+
+    git fetch origin || exit 1
+    git merge "origin/$SOURCE_BRANCH" || exit 1
+  )
+
+  if [ $? -ne 0 ]; then
+    echo "❌ merge failed (check conflicts/status in worktree)"
+    exit 1
+  fi
+
+  echo "✅ merged origin/$SOURCE_BRANCH into worktree"
+  exit 0
+fi
+
+# ----------------------------
+# LIST
+# ----------------------------
+if [ "$CMD" = "list" ]; then
+  git worktree list
+  exit 0
+fi
+
+# ----------------------------
+# FEATURES
+# ----------------------------
+if [ "$CMD" = "features" ]; then
+  git worktree list --porcelain \
+    | awk '/worktree/ {print $2}' \
+    | sed 's#.*/feat/##'
+  exit 0
+fi
+
+echo "❌ unknown command: $CMD"

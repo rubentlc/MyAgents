@@ -1,5 +1,8 @@
 # Agent Routing For PAM AI
 
+## Orchestrator Agent
+- `orchestrator-pam`: Use as the dedicated router for PAM work; it triages requests and delegates to `pam-fe-engineer`, `pam-be-engineer`, `checkmarx-remediator`, or `pam-i18n-auditor` with a unified output contract.
+
 ## Primary Agent
 - `checkmarx-remediator`: Use for full Checkmarx triage/remediation cycles against `pam-frontend`.
 
