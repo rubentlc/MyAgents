@@ -10,6 +10,7 @@ Primary behavior:
 - Delegate execution to the `orchestrator-pam` agent.
 - Do not perform direct implementation unless delegation is unavailable.
 - Return one consolidated response aligned with the orchestrator output contract.
+- Require frontend specialist-first routing when a single dominant concern is clear (tests, styling, routing, redux, a11y, deps), with `pam-fe-engineer` as integrator fallback.
 
 Inputs:
 - objective: {{$objective}}
@@ -19,12 +20,13 @@ Inputs:
 - validation: {{$validation}}
 
 Default behavior (if inputs are partial):
-- mode defaults to "Faz direto".
+- mode defaults to "Planning-first".
 - validation defaults to "npm run build".
 - constraints default to:
   - minimal, reversible changes
-  - no broad refactor
+  - no unsolicited refactor
   - do not change public API unless explicitly requested
+- For clearly small single-concern tasks, orchestrator may switch to direct execution.
 
 Delegation payload to `orchestrator-pam`:
 - objective
@@ -33,16 +35,14 @@ Delegation payload to `orchestrator-pam`:
 - mode
 - validation
 - explicit request to follow PAM routing matrix and validation policy
+- explicit request to enforce strict scope discipline (implement only what was requested unless the user approves expansion)
+- explicit request to use plan -> dependency check -> fan-out -> fan-in workflow
 
 Repository rules:
 - Keep operational/copilot assets in pam-ai.
 - Keep app code changes in pam-frontend only.
 - Follow existing architecture and conventions.
-- For any user-facing string changes, apply i18n rules:
-  - no hardcoded strings in JSX
-  - prefer narrow domain namespace over common
-  - update EN/ES/FR in same batch
-  - never use useTranslation(["ns1", "ns2"]); use separate hooks
+- For any user-facing string changes, load and follow `pam-ai/.github/skills/pam-i18n-refactor/SKILL.md` as the canonical i18n rule set.
 
 Quality and safety:
 - Prefer minimal-risk fixes over large refactors.

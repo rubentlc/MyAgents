@@ -5,7 +5,7 @@ argument-hint: "Provide branch name (required). Optionally provide scan id to ov
 user-invocable: true
 ---
 
-# Checkmarx PAM Branch Remediation
+# Checkmarx PMT Branch Remediation
 
 ## Purpose
 Run an end-to-end remediation workflow for `frontend` using Checkmarx findings from a specific branch.

@@ -16,10 +16,9 @@ description: "Use when triaging or fixing Checkmarx/security findings in pam-fro
 - For source fixes: preserve existing architecture and coding patterns.
 
 ## Validation
-- Run relevant checks after each batch when possible:
-  - `npm run build`
-  - `npm test`
-  - `npm lint`
+- Canonical policy for PAM Checkmarx workflow:
+  - Default validation: `npm run build`
+  - Add `npm test` and `npm run lint` only when explicitly requested or when risk justifies
 - If a check is skipped, explicitly state why.
 
 ## Reporting Contract

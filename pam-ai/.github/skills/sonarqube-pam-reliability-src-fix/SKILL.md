@@ -56,25 +56,22 @@ If a Reliability finding is outside `pam-frontend/src/*`, report it as skipped a
 - Inside each severity, prioritize deterministic runtime and correctness issues before lower-risk edge cases.
 - Work in small, reversible batches.
 
-4. Implement minimal fixes
-
-5. Validate when useful
 4. Implement MECHANICAL FIXES ONLY (No Refactoring)
 - Change only files under `pam-frontend/src/*`.
 - Apply only direct, local corrections that do NOT reorganize code or extract new functions.
 - Keep each fix traceable to one or more Sonar issue keys.
 
 **Allowed Mechanical Fixes:**
-- Replace `indexOf(...) > -1` → `includes()`
-- Replace `isNaN()` → `Number.isNaN()`
-- Replace `.find() !== undefined` existence checks → `.some()`
-- Simplify redundant negations (e.g., `!!x && !y` → `x && !y`)
-- Add optional chaining: `obj.prop.id` → `obj.prop?.id`
+- Replace `indexOf(...) > -1` -> `includes()`
+- Replace `isNaN()` -> `Number.isNaN()`
+- Replace `.find() !== undefined` existence checks -> `.some()`
+- Simplify redundant negations (e.g., `!!x && !y` -> `x && !y`)
+- Add optional chaining: `obj.prop.id` -> `obj.prop?.id`
 - Remove commented-out code blocks
 - Simplify inline ternary expressions (no extraction of logic)
 
 **Forbidden (Do NOT Apply):**
-- Replace `window` → `globalThis`
+- Replace `window` -> `globalThis`
 - Extract helpers or new functions (e.g., `buildIndicators()`, `getItemPercentage()`)
 - Extract types or interfaces
 - Reorganize logic across multiple lines or blocks
@@ -82,7 +79,7 @@ If a Reliability finding is outside `pam-frontend/src/*`, report it as skipped a
 - Consolidate loops or conditional blocks into reusable patterns
 - Any change that moves logic to a new location, even if labeled a "helper"
 
-**If a Sonar finding requires helper extraction:** Mark it BLOCKED and report the limitation — do not apply the fix.
+**If a Sonar finding requires helper extraction:** Mark it BLOCKED and report the limitation - do not apply the fix.
 
 5. Validate when useful
 - Validation is optional and should usually run once at the end, not after every batch.
