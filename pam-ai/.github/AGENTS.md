@@ -6,6 +6,9 @@ Canonical workflow behavior lives in the agent definitions, prompt wrappers, and
 ## Orchestrator Agent
 - `orchestrator-pam`: Use as the dedicated router for PAM work; it triages requests and delegates to frontend specialists, backend, security, and i18n agents with a unified output contract.
 
+## Architecture Governance Agent
+- `pam-architect`: Use for architecture and governance decisions across `.github` assets (routing contracts, role boundaries, policy consistency, and conflict resolution).
+
 ## Frontend Integrator (Fallback)
 - `pam-fe-engineer`: Use as the frontend integrator/fallback for cross-cutting or ambiguous tasks in `pam-frontend`.
 

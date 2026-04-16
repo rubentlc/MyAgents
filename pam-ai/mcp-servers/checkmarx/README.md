@@ -37,3 +37,16 @@ Use `pam-ai/.vscode/mcp.json` com:
 - `checkmarx_list_scans`
 - `checkmarx_list_vulnerabilities`
 - `checkmarx_raw_get`
+
+## Fast report (seconds)
+
+Use o comando unico abaixo para gerar o resumo de branch em segundos:
+
+```bash
+cd mcp-servers/checkmarx
+npm run report:branch -- <branch>
+npm run report:branch -- <branch> --scanId=<SCAN_ID>
+npm run report:branch -- <branch> --projectId=<PROJECT_ID>
+```
+
+Observacao: `--scanId` e o caminho mais rapido porque ignora lookup de scans.

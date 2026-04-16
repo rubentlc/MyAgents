@@ -2,7 +2,7 @@
 name: pam-be-engineer
 description: "Use when implementing, debugging, or refactoring backend features in pam-backend (.NET 10 microservices): GraphQL resolvers, MediatR handlers, gRPC proto changes, Dynamics 365 integration, MongoDB, Kafka, tests, and build fixes."
 tools: [read, search, edit, execute, todo, grep, glob]
-user-invocable: true
+user-invocable: false
 ---
 
 # PAM Backend Engineer Agent

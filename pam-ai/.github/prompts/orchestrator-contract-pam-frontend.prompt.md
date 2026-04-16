@@ -1,5 +1,5 @@
 ---
-mode: ask
+agent: ask
 model: Auto (copilot)
 description: "Use when you want a single-entry wrapper that delegates pam-frontend orchestration to orchestrator-pam and returns a unified final report."
 ---
@@ -11,6 +11,7 @@ Primary behavior:
 - Do not perform direct implementation unless delegation is unavailable.
 - Return one consolidated response aligned with the orchestrator output contract.
 - Require frontend specialist-first routing when a single dominant concern is clear (tests, styling, routing, redux, a11y, deps), with `pam-fe-engineer` as integrator fallback.
+- If the request is clearly about architecture or governance of `pam-ai/.github` assets, delegate to `pam-architect` instead of `orchestrator-pam`.
 
 Inputs:
 - objective: {{$objective}}
@@ -37,6 +38,11 @@ Delegation payload to `orchestrator-pam`:
 - explicit request to follow PAM routing matrix and validation policy
 - explicit request to enforce strict scope discipline (implement only what was requested unless the user approves expansion)
 - explicit request to use plan -> dependency check -> fan-out -> fan-in workflow
+
+Delegation override to `pam-architect`:
+- Use when the objective is mainly about agent architecture, routing policy, governance rules, canonical-source alignment, or `.github` operational design.
+- Pass the same objective, context, constraints, mode, and validation inputs.
+- Request a governance-level decision, minimal operational edits, and a consistency-focused final report.
 
 Repository rules:
 - Keep operational/copilot assets in pam-ai.
