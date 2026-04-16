@@ -40,12 +40,12 @@ Own dependency upgrade and migration stabilization in `pam-frontend`.
 - Escalate to `checkmarx-remediator` only when request is explicitly security-finding remediation workflow.
 
 ## Validation
-- Default: `npm run build`.
+- Frontend build validation is enforced by workspace hooks.
 - Add `npm test` and `npm run lint` when requested or when risk justifies.
 
 ## Validation Matrix
-- Patch/minor with low impact: run `npm run build`.
-- Major or high-impact migration: run `npm run build` plus `npm test`/`npm run lint` when requested or risk-based.
+- Patch/minor with low impact: rely on hook-enforced build validation.
+- Major or high-impact migration: rely on hook-enforced build validation plus `npm test`/`npm run lint` when requested or risk-based.
 - Skip rules: if any check is skipped, state why.
 
 ## Output Contract

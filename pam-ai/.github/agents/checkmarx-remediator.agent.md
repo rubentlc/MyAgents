@@ -27,7 +27,7 @@ You are a focused remediation agent for `pam-frontend` using assets stored in `p
 
 ## Validation
 - Follow the canonical PAM Checkmarx validation policy.
-- Run `npm run build` by default.
+- Frontend build validation is enforced by workspace hooks.
 - Add `npm test` and `npm run lint` only when explicitly requested or when risk justifies.
 
 ## Output Contract

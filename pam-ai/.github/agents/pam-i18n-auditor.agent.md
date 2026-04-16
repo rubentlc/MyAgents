@@ -68,12 +68,7 @@ Never leave a locale incomplete. All 3 must be updated in the same batch.
 Check whether an equivalent key already exists before creating a new one.
 
 ## Validation
-After all fixes in a batch, run:
-
-```bash
-npm run build
-```
-
+Frontend build validation is enforced by workspace hooks.
 Fix any type errors before reporting done.
 
 ## Output Contract

@@ -40,12 +40,12 @@ Own route and navigation behavior in `pam-frontend`.
 - Escalate to `pam-fe-engineer` when routing changes require coordinated UI/state updates.
 
 ## Validation
-- `npm run build`.
+- Frontend build validation is enforced by workspace hooks.
 - `npm test` for route-related suites when touched.
 
 ## Validation Matrix
-- Route config/call-site updates: run `npm run build`.
-- Route behavior with affected tests: run `npm run build` and `npm test` for touched suites.
+- Route config/call-site updates: rely on hook-enforced build validation.
+- Route behavior with affected tests: rely on hook-enforced build validation and run `npm test` for touched suites.
 - Skip rules: if any check is skipped, state why.
 
 ## Output Contract

@@ -42,11 +42,11 @@ Own frontend test quality in `pam-frontend` using Vitest and Testing Library.
 
 ## Validation
 - `npm test` for changed scope.
-- `npm run build` when changes may affect runtime behavior.
+- Frontend build validation is enforced by workspace hooks when runtime behavior is affected.
 
 ## Validation Matrix
 - Test-only file changes: run `npm test` targeted or suite-level.
-- Test plus product-code seam changes: run `npm test` and `npm run build`.
+- Test plus product-code seam changes: run `npm test` and rely on hook-enforced build validation.
 - Skip rules: if any check is skipped, state why.
 
 ## Output Contract

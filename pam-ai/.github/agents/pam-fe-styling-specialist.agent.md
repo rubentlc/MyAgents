@@ -40,12 +40,12 @@ Own style and layout changes in `pam-frontend` with minimal logic impact.
 - Escalate to `pam-fe-engineer` when style issues require coordinated logic and structure changes.
 
 ## Validation
-- `npm run build`.
+- Frontend build validation is enforced by workspace hooks.
 - Add targeted UI tests only when risk justifies.
 
 ## Validation Matrix
-- Pure style update: run `npm run build`.
-- Style plus behavior-impacting markup updates: run `npm run build` and targeted tests when available.
+- Pure style update: rely on hook-enforced build validation.
+- Style plus behavior-impacting markup updates: rely on hook-enforced build validation and run targeted tests when available.
 - Skip rules: if any check is skipped, state why.
 
 ## Output Contract

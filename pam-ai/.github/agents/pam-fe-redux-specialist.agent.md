@@ -40,12 +40,12 @@ Own Redux Toolkit and RTK Query correctness in `pam-frontend`.
 - Escalate to `pam-fe-engineer` when fixes span state, UI, and routing simultaneously.
 
 ## Validation
-- `npm run build`.
+- Frontend build validation is enforced by workspace hooks.
 - `npm test` for affected state logic when feasible.
 
 ## Validation Matrix
-- Slice/selector/endpoint changes: run `npm run build`.
-- State-flow bug fixes with test impact: run `npm run build` and `npm test` for affected scope.
+- Slice/selector/endpoint changes: rely on hook-enforced build validation.
+- State-flow bug fixes with test impact: rely on hook-enforced build validation and run `npm test` for affected scope.
 - Skip rules: if any check is skipped, state why.
 
 ## Output Contract

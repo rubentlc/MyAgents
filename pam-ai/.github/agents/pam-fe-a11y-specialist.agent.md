@@ -40,12 +40,12 @@ Own accessibility compliance and UX safety in `pam-frontend`.
 - Escalate to `pam-fe-engineer` when accessibility fixes require coordinated multi-domain changes.
 
 ## Validation
-- `npm run build`.
+- Frontend build validation is enforced by workspace hooks.
 - Add/adjust targeted tests when feasible for focus/keyboard paths.
 
 ## Validation Matrix
-- ARIA/semantics/focus updates: run `npm run build`.
-- Keyboard/focus flow fixes with tests available: run `npm run build` and targeted tests.
+- ARIA/semantics/focus updates: rely on hook-enforced build validation.
+- Keyboard/focus flow fixes with tests available: rely on hook-enforced build validation and run targeted tests.
 - Skip rules: if any check is skipped, state why.
 
 ## Output Contract
