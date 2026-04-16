@@ -1,7 +1,7 @@
 #!/bin/bash
 
-BASE_DEFAULT="main"
-FEATURE_DIR="../feat"
+BASE_DEFAULT="develop"
+FEATURE_DIR="../worktree"
 
 CMD=$1
 shift
@@ -130,8 +130,8 @@ if [ "$CMD" = "open" ]; then
           /^worktree / {
             path=$2
             label=path
-            if (path ~ /\/feat\//) {
-              sub(/^.*\/feat\//, "", label)
+            if (path ~ /\/worktree\//) {
+              sub(/^.*\/worktree\//, "", label)
             }
             print label "\t" path
           }
@@ -175,6 +175,7 @@ if [ "$CMD" = "delete" ]; then
   LEGACY_QUERY=""
   USED_W=0
   FORCE_DELETE=0
+  BRANCH_NAME=""
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -210,8 +211,8 @@ if [ "$CMD" = "delete" ]; then
           /^worktree / {
             path=$2
             label=path
-            if (path ~ /\/feat\//) {
-              sub(/^.*\/feat\//, "", label)
+            if (path ~ /\/worktree\//) {
+              sub(/^.*\/worktree\//, "", label)
             }
             print label "\t" path
           }
@@ -242,6 +243,8 @@ if [ "$CMD" = "delete" ]; then
     echo "❌ not found"
     exit 1
   fi
+
+  BRANCH_NAME=$(git -C "$PATH_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null)
 
   MAIN_WORKTREE_PATH=$(get_main_worktree_path)
 
@@ -283,8 +286,61 @@ if [ "$CMD" = "delete" ]; then
     exit 1
   fi
 
+  echo "✅ worktree removed"
+
   if [ -e "$PATH_DIR" ]; then
     rm -rf "$PATH_DIR"
+    if [ -e "$PATH_DIR" ]; then
+      echo "⚠️ folder still exists: $PATH_DIR"
+    else
+      echo "✅ folder removed: $PATH_DIR"
+    fi
+  else
+    echo "ℹ️ folder already absent: $PATH_DIR"
+  fi
+
+  # Avoid deleting long-lived base branches by default.
+  SKIP_BRANCH_DELETE=0
+  if [ -z "$BRANCH_NAME" ] || [ "$BRANCH_NAME" = "HEAD" ] || [ "$BRANCH_NAME" = "$BASE_DEFAULT" ] || [ "$BRANCH_NAME" = "master" ]; then
+    SKIP_BRANCH_DELETE=1
+  fi
+
+  if [ "$SKIP_BRANCH_DELETE" -eq 0 ]; then
+    if [ "$FORCE_DELETE" -eq 1 ]; then
+      LOCAL_DELETE_OUTPUT=$(git branch -D "$BRANCH_NAME" 2>&1)
+      if [ $? -eq 0 ]; then
+        echo "✅ local branch removed: $BRANCH_NAME"
+      else
+        echo "⚠️ local branch delete failed: $BRANCH_NAME"
+        echo "$LOCAL_DELETE_OUTPUT"
+      fi
+
+      REMOTE_DELETE_OUTPUT=$(git push --force origin ":refs/heads/$BRANCH_NAME" 2>&1)
+      if [ $? -eq 0 ]; then
+        echo "✅ remote branch removed (force): $BRANCH_NAME"
+      else
+        echo "⚠️ remote branch delete failed (force): $BRANCH_NAME"
+        echo "$REMOTE_DELETE_OUTPUT"
+      fi
+    else
+      LOCAL_DELETE_OUTPUT=$(git branch -d "$BRANCH_NAME" 2>&1)
+      if [ $? -eq 0 ]; then
+        echo "✅ local branch removed: $BRANCH_NAME"
+      else
+        echo "⚠️ local branch delete failed: $BRANCH_NAME"
+        echo "$LOCAL_DELETE_OUTPUT"
+      fi
+
+      REMOTE_DELETE_OUTPUT=$(git push origin --delete "$BRANCH_NAME" 2>&1)
+      if [ $? -eq 0 ]; then
+        echo "✅ remote branch removed: $BRANCH_NAME"
+      else
+        echo "⚠️ remote branch delete failed: $BRANCH_NAME"
+        echo "$REMOTE_DELETE_OUTPUT"
+      fi
+    fi
+  else
+    echo "ℹ️ branch delete skipped: $BRANCH_NAME"
   fi
 
   echo "✅ deleted"
@@ -515,7 +571,7 @@ fi
 if [ "$CMD" = "features" ]; then
   git worktree list --porcelain \
     | awk '/worktree/ {print $2}' \
-    | sed 's#.*/feat/##'
+    | sed 's#.*/worktree/##'
   exit 0
 fi
 

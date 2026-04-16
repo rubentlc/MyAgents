@@ -29,11 +29,11 @@ _igit() {
   # ----------------------------
   # WORKTREE COMPLETION SOURCE
   # ----------------------------
-  local -a feats
-  feats=(${(f)"$(git worktree list --porcelain 2>/dev/null \
+  local -a worktrees
+  worktrees=(${(f)"$(git worktree list --porcelain 2>/dev/null \
     | awk '/^worktree / {print $2}' \
-    | grep '/feat/' \
-    | sed 's#.*/feat/##')"})
+    | grep '/worktree/' \
+    | sed 's#.*/worktree/##')"})
 
   local -a origin_branches
   origin_branches=(${(f)"$(git for-each-ref --format='%(refname:short)' refs/remotes/origin 2>/dev/null \
@@ -55,23 +55,23 @@ _igit() {
     open)
       if (( CURRENT == 3 )); then
         _describe 'options' "-w:target worktree"
-        _describe 'worktrees' feats
+        _describe 'worktrees' worktrees
       elif (( CURRENT == 4 )) && [[ "${words[3]}" == "-w" ]]; then
-        _describe 'worktrees' feats
+        _describe 'worktrees' worktrees
       fi
       ;;
 
     delete)
       if (( CURRENT == 3 )); then
         _describe 'options' delete_options
-        _describe 'worktrees' feats
+        _describe 'worktrees' worktrees
       elif (( CURRENT == 4 )) && [[ "${words[3]}" == "-w" ]]; then
-        _describe 'worktrees' feats
+        _describe 'worktrees' worktrees
       elif (( CURRENT == 4 )) && [[ "${words[3]}" == "--force" ]]; then
         _describe 'options' "-w:target worktree"
-        _describe 'worktrees' feats
+        _describe 'worktrees' worktrees
       elif (( CURRENT == 5 )) && [[ "${words[3]}" == "--force" ]] && [[ "${words[4]}" == "-w" ]]; then
-        _describe 'worktrees' feats
+        _describe 'worktrees' worktrees
       fi
       ;;
 
@@ -79,7 +79,7 @@ _igit() {
       if (( CURRENT == 3 )); then
         _describe 'options' "-w:target worktree"
       elif (( CURRENT == 4 )) && [[ "${words[3]}" == "-w" ]]; then
-        _describe 'worktrees' feats
+        _describe 'worktrees' worktrees
       fi
       ;;
 
@@ -87,7 +87,7 @@ _igit() {
       if (( CURRENT == 3 )); then
         _describe 'options' "-w:target worktree"
       elif (( CURRENT == 4 )) && [[ "${words[3]}" == "-w" ]]; then
-        _describe 'worktrees' feats
+        _describe 'worktrees' worktrees
       fi
       ;;
 
@@ -96,7 +96,7 @@ _igit() {
         _describe 'options' "-w:target worktree"
         _describe 'branches' origin_branches
       elif (( CURRENT == 4 )) && [[ "${words[3]}" == "-w" ]]; then
-        _describe 'worktrees' feats
+        _describe 'worktrees' worktrees
       elif (( CURRENT == 5 )) && [[ "${words[3]}" == "-w" ]]; then
         _describe 'branches' origin_branches
       fi

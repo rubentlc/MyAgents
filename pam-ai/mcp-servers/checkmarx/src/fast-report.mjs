@@ -9,7 +9,9 @@ dotenv.config({ path: path.resolve(__dirname, "../.env"), quiet: true });
 
 const DEFAULT_PROJECT_ID = "291039a8-156d-488d-b2d9-2b77cbb4c6e6";
 const SEVERITIES = ["critical", "high"];
-const ALLOWED_STATUSES = new Set(["SNOOZE", "MONITORED"]);
+// Findings to act on: active and unresolved states
+const ACTIVE_STATUSES = new Set(["TO_VERIFY", "RECURRENT", "URGENT"]);
+const EXCLUDED_STATUSES = new Set(["NOT_EXPLOITABLE", "IGNORED"]);
 
 const args = process.argv.slice(2);
 const branch = args.find((arg) => !arg.startsWith("--"));
@@ -146,6 +148,17 @@ const requestJson = async (apiPath, query = {}) => {
 
 const extractItems = (data) => data.results ?? data.vulnerabilities ?? data.items ?? data.data ?? [];
 
+// Parse "Npm-packagename-1.2.3" or "Npm-@scope/pkg-1.2.3" format
+const parsePackageIdentifier = (pkgId) => {
+  if (!pkgId) return { name: null, version: null };
+  // Remove "Npm-" prefix (case-insensitive)
+  const withoutPrefix = pkgId.replace(/^Npm-/i, "");
+  // Match last semver-like segment: digits.digits[.digits...]
+  const m = withoutPrefix.match(/^(.+)-(\d+\.\d+(?:\.\d+)*)$/);
+  if (m) return { name: m[1], version: m[2] };
+  return { name: withoutPrefix, version: null };
+};
+
 const resolveScan = async () => {
   if (scanId) {
     return { id: scanId, branch: branch ?? "(scanId override)", status: "Completed", createdAt: null };
@@ -201,27 +214,31 @@ const toTableRows = (entries) => {
   const grouped = new Map();
 
   for (const { severity, finding } of entries) {
-    const status = String(finding.status ?? finding.state ?? finding?.data?.status ?? "").toUpperCase();
-    if (!ALLOWED_STATUSES.has(status)) {
+    const status = String(finding.status ?? "").toUpperCase();
+    const state = String(finding.state ?? "").toUpperCase();
+    // Skip only explicitly muted/closed findings
+    if (EXCLUDED_STATUSES.has(status) || EXCLUDED_STATUSES.has(state)) {
       continue;
     }
 
+    // Extract package info from packageIdentifier ("Npm-pkgname-version")
+    const pkgId = finding?.data?.packageIdentifier ?? "";
+    const parsed = parsePackageIdentifier(pkgId);
+
     const packageName =
+      parsed.name ??
       finding?.data?.packageName ??
       finding?.packageName ??
-      finding?.package?.name ??
-      finding?.data?.libraryName ??
-      finding?.libraryName ??
       "unknown";
 
     const packageVersion =
+      parsed.version ??
       finding?.data?.packageVersion ??
       finding?.packageVersion ??
-      finding?.package?.version ??
-      finding?.data?.version ??
       "unknown";
 
     const findingId = String(finding.id ?? finding.resultId ?? finding.vulnerabilityId ?? "unknown");
+    const recommendedVersion = finding?.data?.recommendedVersion ?? finding?.recommendedVersion ?? null;
     const key = `${packageName}|${packageVersion}|${severity}`;
 
     if (!grouped.has(key)) {
@@ -229,6 +246,7 @@ const toTableRows = (entries) => {
         packageName,
         packageVersion,
         severity,
+        recommendedVersion,
         findingIds: [],
       });
     }
@@ -242,12 +260,12 @@ const toTableRows = (entries) => {
 };
 
 const printMarkdownTable = (rows) => {
-  console.log("| package name | package version | severity | finding ids |");
-  console.log("|---|---|---|---|");
+  console.log("| package name | current version | recommended version | severity | finding ids |");
+  console.log("|---|---|---|---|---|");
 
   rows.forEach((row) => {
     console.log(
-      `| ${row.packageName} | ${row.packageVersion} | ${row.severity.toUpperCase()} | ${row.findingIds.join(", ")} |`,
+      `| ${row.packageName} | ${row.packageVersion} | ${row.recommendedVersion ?? "-"} | ${row.severity.toUpperCase()} | ${row.findingIds.join(", ")} |`,
     );
   });
 };
@@ -266,7 +284,7 @@ const main = async () => {
   if (selectedScan.createdAt) {
     console.log(`ScanCreatedAt: ${selectedScan.createdAt}`);
   }
-  console.log("Filter: status in [SNOOZE, MONITORED]");
+  console.log("Filter: exclude [NOT_EXPLOITABLE, IGNORED] — showing active/unresolved findings");
   console.log(`Critical+High findings fetched: ${entries.length}`);
   console.log(`Filtered package rows: ${rows.length}`);
   console.log("");
