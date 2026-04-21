@@ -103,6 +103,7 @@ If a Maintainability finding is outside `pam-frontend/src/*`, report it as skipp
 - If Sonar points to generated/vendor/external code, skip and report.
 - If no in-scope `MAINTAINABILITY` issues exist, stop and report clean status for scope.
 - Prefer multiple small commits over one large risky change set.
+- Keep prompts/skills/agent assets in `pam-ai`; MCP server lives in the `mcp-servers` workspace folder; keep application code changes in `pam-frontend`.
 
 ## Done Criteria
 - All fixable in-scope `MAINTAINABILITY` findings for the target branch are resolved or documented with blockers.

@@ -1,0 +1,20 @@
+{
+  "servers": {
+    "checkmarx": {
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/mcp-servers/checkmarx/dist/index.js"
+      ],
+      "cwd": "${workspaceFolder}/mcp-servers/checkmarx",
+      "envFile": "${workspaceFolder}/mcp-servers/checkmarx/.env"
+    },
+    "sonarqube": {
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/mcp-servers/sonarqube/dist/index.js"
+      ],
+      "cwd": "${workspaceFolder}/mcp-servers/sonarqube",
+      "envFile": "${workspaceFolder}/mcp-servers/sonarqube/.env"
+    }
+  }
+}

@@ -1,30 +1,30 @@
 ---
-name: sonarqube-pam-reliability-src-fix
-description: "Use when you want automatic SonarQube Reliability remediation for PAM frontend: collect issues impacting RELIABILITY, restrict scope to pam-frontend/src/*, and apply fixes only inside that path."
+name: sonarqube-pmt-reliability-src-fix
+description: "Use when you want automatic SonarQube Reliability remediation for PMT frontend: collect issues impacting RELIABILITY, restrict scope to frontend/src/*, and apply fixes only inside that path."
 argument-hint: "Provide branch name (optional, default: develop). Optionally provide max issues per batch."
 user-invocable: true
 ---
 
-# SonarQube PAM Reliability (src-only) Remediation
+# SonarQube PMT Reliability (src-only) Remediation
 
 ## Purpose
-Run a controlled remediation workflow for SonarQube issues impacting `RELIABILITY` in `pam-frontend`, while strictly limiting code changes to `pam-frontend/src/*`.
+Run a controlled remediation workflow for SonarQube issues impacting `RELIABILITY` in `frontend`, while strictly limiting code changes to `frontend/src/*`.
 
 ## Hard Scope Boundary
 - In-scope findings:
   - SonarQube issues whose `impactSoftwareQualities` includes `RELIABILITY`
-  - Project key `actman.pam_pam-frontend`
+  - Project key `actman.pmt_frontend`
   - Branch: input branch, default `develop`
-  - Components whose path starts with `pam-frontend/src/`
+  - Components whose path starts with `frontend/src/`
 - Out of scope:
-  - Any file outside `pam-frontend/src/*`
+  - Any file outside `frontend/src/*`
   - `SECURITY_HOTSPOT`
   - Pipeline, Docker, Kubernetes, or config-file fixes outside `src`
 
-If a Reliability finding is outside `pam-frontend/src/*`, report it as skipped and do not modify files.
+If a Reliability finding is outside `frontend/src/*`, report it as skipped and do not modify files.
 
 ## Defaults
-- `projectKey`: `actman.pam_pam-frontend`
+- `projectKey`: `actman.pmt_frontend`
 - `branch`: `develop`
 - `impactSoftwareQuality`: `RELIABILITY`
 - Batch size: 5 issues per pass
@@ -42,13 +42,13 @@ If a Reliability finding is outside `pam-frontend/src/*`, report it as skipped a
 - Collect SonarQube issues filtered by `impactSoftwareQualities=RELIABILITY`.
 - Prefer `sonarqube_raw_get` with `/api/issues/search` when needed, because reliability is a software-quality impact filter rather than a legacy `type` filter.
 - Use:
-  - `componentKeys=actman.pam_pam-frontend`
+  - `componentKeys=actman.pmt_frontend`
   - `branch=<input or develop>`
   - `impactSoftwareQualities=RELIABILITY`
   - paging parameters until all issues are collected.
 
 2. Filter to src-only scope
-- Keep only findings where component/path starts with `pam-frontend/src/`.
+- Keep only findings where component/path starts with `frontend/src/`.
 - Exclude every finding outside that path and track it as `skipped_out_of_scope`.
 
 3. Prioritize by risk and fixability
@@ -57,7 +57,7 @@ If a Reliability finding is outside `pam-frontend/src/*`, report it as skipped a
 - Work in small, reversible batches.
 
 4. Implement MECHANICAL FIXES ONLY (No Refactoring)
-- Change only files under `pam-frontend/src/*`.
+- Change only files under `frontend/src/*`.
 - Apply only direct, local corrections that do NOT reorganize code or extract new functions.
 - Keep each fix traceable to one or more Sonar issue keys.
 
@@ -94,18 +94,18 @@ If a Reliability finding is outside `pam-frontend/src/*`, report it as skipped a
 6. Report
 - Branch analyzed and total `RELIABILITY` findings.
 - In-scope findings fixed (issue keys, severities, files changed).
-- Out-of-scope findings skipped (explicit reason: outside `pam-frontend/src/*`).
+- Out-of-scope findings skipped (explicit reason: outside `frontend/src/*`).
 - Validation results, or explicit note that validation was skipped.
 - Residual Reliability risk and next actions.
 
 ## Decision Rules
-- Never edit files outside `pam-frontend/src/*`.
+- Never edit files outside `frontend/src/*`.
 - If Sonar points to generated/vendor/external code, skip and report.
 - If no in-scope `RELIABILITY` issues exist, stop and report clean status for scope.
 - Prefer multiple small commits over one large risky change set.
-- Keep prompts/skills/agent assets in `pam-ai`; MCP server lives in the `mcp-servers` workspace folder; keep application code changes in `pam-frontend`.
+- Keep prompts/skills/agent assets in `pmt-ai`; MCP server lives in the `mcp-servers` workspace folder; keep application code changes in `frontend`.
 
 ## Done Criteria
 - All fixable in-scope `RELIABILITY` findings for the target branch are resolved or documented with blockers.
-- No code outside `pam-frontend/src/*` was modified.
+- No code outside `frontend/src/*` was modified.
 - Validation status is explicit when run or skipped.

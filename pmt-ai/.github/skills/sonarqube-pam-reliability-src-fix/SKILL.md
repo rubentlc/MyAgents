@@ -103,7 +103,7 @@ If a Reliability finding is outside `pam-frontend/src/*`, report it as skipped a
 - If Sonar points to generated/vendor/external code, skip and report.
 - If no in-scope `RELIABILITY` issues exist, stop and report clean status for scope.
 - Prefer multiple small commits over one large risky change set.
-- Keep prompts/skills/agent assets in `pam-ai`; MCP server lives in the `mcp-servers` workspace folder; keep application code changes in `pam-frontend`.
+- Keep prompts/skills/agent assets in `pmt-ai`; MCP server lives in the `mcp-servers` workspace folder; keep application code changes in `pam-frontend`.
 
 ## Done Criteria
 - All fixable in-scope `RELIABILITY` findings for the target branch are resolved or documented with blockers.

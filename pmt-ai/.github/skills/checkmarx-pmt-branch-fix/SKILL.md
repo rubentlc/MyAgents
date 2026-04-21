@@ -24,7 +24,7 @@ Run an end-to-end remediation workflow for `frontend` using Checkmarx findings f
 - `scanId` (optional, overrides latest scan selection)
 
 ## Fast Path (Seconds)
-- Preferred collector: from `pam-ai/mcp-servers/checkmarx` run `npm run report:branch -- <branch> --projectId=73ccd21f-5e16-4ba2-b74b-27be2cd375cc [--scanId=<SCAN_ID>]`.
+- Preferred collector: from the `mcp-servers/checkmarx` workspace folder (separate workspace, not inside `pmt-ai`) run `npm run report:branch -- <branch> --projectId=73ccd21f-5e16-4ba2-b74b-27be2cd375cc [--scanId=<SCAN_ID>]`.
 - Prefer `scanId` when available to skip scan lookup and reduce latency.
 - Never use ad-hoc heredoc or temporary scripts for data collection.
 - Use MCP list calls only as fallback when the fast command is unavailable.
@@ -87,7 +87,7 @@ Run an end-to-end remediation workflow for `frontend` using Checkmarx findings f
 ## Decision Rules
 - If no high/critical findings exist for the scan, stop and report clean status.
 - If findings cannot be fixed safely in one pass, split into explicit follow-up batches.
-- Keep operational files in `pam-ai`; keep application code changes in `frontend`.
+- Keep prompts/skills/agent assets in `pmt-ai`; MCP server lives in the `mcp-servers` workspace folder; keep application code changes in `frontend`.
 
 ## Done Criteria
 - Selected scan is explicit and traceable to input branch.

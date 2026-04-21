@@ -115,6 +115,19 @@ For frontend tasks, route by dominant concern:
 - Backend default: `dotnet build` and `dotnet test`.
 - If validation is skipped, explicitly state why.
 
+## Definition of Done
+
+Before reporting any work-item as complete, verify:
+1. Build passes — frontend build validation enforced by workspace hooks; `dotnet build` for backend.
+2. Tests pass for changed scope.
+3. No hardcoded secrets, tokens, connection strings, or PII in changed files.
+4. Functions are under 40 lines; files under 500 lines.
+5. No `any` or untyped code introduced.
+6. If UI text was added or modified: i18n keys exist in EN, ES, and FR locale files.
+7. `.npmrc` diffs from `npm install`/`npm i` are ignored — do not count as validation failures.
+
+If any item cannot be verified, state why explicitly before closing.
+
 ## Output Contract
 Always return:
 - Objective understood.
