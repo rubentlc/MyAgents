@@ -1,26 +1,37 @@
 #compdef igit
 
 _igit() {
-  local -a commands
-
-  commands=(
-    "feature: igit feature <number?> <name?> --base? <branch> "
-    "hotfix: igit hotfix <number?> <name?> --base? <branch> "
-    "bugfix: igit bugfix <number?> <name?> --base? <branch> "
-    "spike: igit spike <number?> <name?> --base? <branch> "
-    "commit: igit commit [-w <worktree>] <message>"
-    "undo-commit: igit undo-commit [-w <worktree>]"
-    "merge-into: igit merge-into [-w <worktree>] <branch>"
-    "open: igit open [-w <worktree>] | igit open to list worktrees"
-    "delete: igit delete [--force] [-w <worktree>]"
-    "list: list all worktrees"
-  )
-
   # ----------------------------
   # first argument = command
   # ----------------------------
   if (( CURRENT == 2 )); then
-    _describe 'command' commands
+    local -a names descs
+
+    names=(feature hotfix bugfix spike)
+    descs=(
+      'feature     -- igit feature <number?> <name?> [-b? <branch>]'
+      'hotfix      -- igit hotfix <number?> <name?> [-b? <branch>]'
+      'bugfix      -- igit bugfix <number?> <name?> [-b? <branch>]'
+      'spike       -- igit spike <number?> <name?> [-b? <branch>]'
+    )
+    compadd -l -X 'Create new worktree and switch to it' -V 'create' -d descs -- "${names[@]}"
+
+    names=(open delete list)
+    descs=(
+      'open    -- igit open [-w? <worktree>]'
+      'delete  -- igit delete [-w? <worktree>]'
+      'list    -- list all worktrees'
+    )
+    compadd -l -X $'\nOpen, Delete and List:' -V 'open' -d descs -- "${names[@]}"
+
+    names=(commit undo-commit merge-into)
+    descs=(
+      'commit      -- igit commit [-w? <worktree>] <message>'
+      'undo-commit -- igit undo-commit [-w? <worktree>]'
+      'merge-into  -- igit merge-into [-w? <worktree>] <branch>'
+    )
+    compadd -l -X $'\nManage Commits:' -V 'commits' -d descs -- "${names[@]}"
+
     return
   fi
 

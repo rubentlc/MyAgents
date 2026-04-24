@@ -71,8 +71,16 @@ description: "Code quality standards applied to all agents and code generation. 
 - Inject dependencies through constructor or parameter, not global import.
 - Wrap third-party libraries behind a thin interface owned by this project.
 
+## TypeScript
+
+- Strict typing is mandatory. No `any`, no untyped functions.
+- **Use `interface` instead of `type` for data models.** Reserve `type` for unions, intersections, and utility aliases.
+- Model names use PascalCase (e.g. `GoDetail`, `IndicatorRow`, `OuSummary`).
+- All frontend data models live in `libs/pmt-models/src/lib/` and are imported via `@pmt/pmt-models`. Always check existing models there before creating a new one.
+
 ## Structure
 
+- **Custom hooks:** extract data-fetching, data-transformation, and business logic into custom hooks. Components contain only rendering and event wiring — no inline data transformation, no derived-state calculations, no direct API calls in JSX.
 - **Frontend (`pmt-v2/frontend`):** follow the Nx monorepo layout. Pages in `apps/pmt-frontend/src/app/pages/`, shared UI in `libs/pmt-ui/`, all HTTP calls in `libs/pmt-services/`.
 - **Backend (`pmt-v2/backend`):** follow the layered pattern — Controller → Service → Repository → `PmtDbContext`. Stored procedures only; no inline SQL.
 - Prefer small focused modules over god files.

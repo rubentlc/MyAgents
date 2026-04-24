@@ -19,6 +19,12 @@ confirm() {
   [[ "$RESP" == "y" || "$RESP" == "Y" ]]
 }
 
+confirm_y() {
+  read -p "$1 [Y/n]: " RESP
+  RESP=${RESP:-Y}
+  [[ "$RESP" == "y" || "$RESP" == "Y" ]]
+}
+
 get_worktree_path() {
   git worktree list --porcelain \
     | awk '/worktree/ {print $2}'
@@ -88,9 +94,51 @@ if [[ "$CMD" == "feature" || "$CMD" == "hotfix" || "$CMD" == "bugfix" || "$CMD" 
     exit 0
   fi
 
+  echo "🔄 Updating base branch: $BASE..."
+  git fetch origin "$BASE" && git checkout "$BASE" && git pull origin "$BASE"
+  if [ $? -ne 0 ]; then
+    echo "❌ failed to update base branch"
+    exit 1
+  fi
+
   git worktree add -b "$BRANCH" "$PATH_DIR" "$BASE"
 
   echo "✅ created"
+
+  MAIN_PATH=$(get_main_worktree_path)
+  if [ -e "$MAIN_PATH/.devcontainer" ]; then
+    cp -r "$MAIN_PATH/.devcontainer" "$PATH_DIR/.devcontainer"
+    echo "📋 .devcontainer copied"
+  fi
+  echo ""
+
+  read -p "Do you want to open the new worktree? [Y/n]: " INSTALL_RESP
+  INSTALL_RESP=${INSTALL_RESP:-Y}
+
+  if [[ "$INSTALL_RESP" == "y" || "$INSTALL_RESP" == "Y" ]]; then
+    #echo "📦 Installing dependencies..."
+    # copy .npmrc file to be able to install private packages. the file in removed after automatically
+    cp -r "$MAIN_PATH/.npmrc" "$PATH_DIR/.npmrc"
+    #(cd "$PATH_DIR" && npm i)
+    #remove after intall
+    #rm "$PATH_DIR/.npmrc"
+    echo "💻 Opening VS Code..."
+    if [ -f "$PATH_DIR/.devcontainer/devcontainer.json" ]; then
+      ABS_PATH=$(cd "$PATH_DIR" && pwd)
+      HEX_PATH=$(printf '%s' "$ABS_PATH" | xxd -p | tr -d '\n')
+      if [ -f "$PATH_DIR/.devcontainer/workspace.code-workspace" ]; then
+        CONTAINER_FOLDER=$(grep -o '"workspaceFolder"[[:space:]]*:[[:space:]]*"[^"]*"' "$PATH_DIR/.devcontainer/devcontainer.json" \
+          | grep -o '"[^"]*"$' | tr -d '"')
+        CONTAINER_FOLDER=${CONTAINER_FOLDER:-"/workspaces/$(basename "$ABS_PATH")"}
+        code --remote "dev-container+$HEX_PATH" "$CONTAINER_FOLDER/.devcontainer/workspace.code-workspace"
+      else
+        code --folder-uri "vscode-remote://dev-container+$HEX_PATH"
+      fi
+    else
+      code -n "$PATH_DIR"
+    fi
+  fi
+
   exit 0
 fi
 
@@ -163,7 +211,20 @@ if [ "$CMD" = "open" ]; then
     exit 1
   fi
 
-  code -n "$PATH_DIR"
+  if [ -f "$PATH_DIR/.devcontainer/devcontainer.json" ]; then
+    ABS_PATH=$(cd "$PATH_DIR" && pwd)
+    HEX_PATH=$(printf '%s' "$ABS_PATH" | xxd -p | tr -d '\n')
+    if [ -f "$PATH_DIR/.devcontainer/workspace.code-workspace" ]; then
+      CONTAINER_FOLDER=$(grep -o '"workspaceFolder"[[:space:]]*:[[:space:]]*"[^"]*"' "$PATH_DIR/.devcontainer/devcontainer.json" \
+        | grep -o '"[^"]*"$' | tr -d '"')
+      CONTAINER_FOLDER=${CONTAINER_FOLDER:-"/workspaces/$(basename "$ABS_PATH")"}
+      code --remote "dev-container+$HEX_PATH" "$CONTAINER_FOLDER/.devcontainer/workspace.code-workspace"
+    else
+      code --folder-uri "vscode-remote://dev-container+$HEX_PATH"
+    fi
+  else
+    code -n "$PATH_DIR"
+  fi
   exit 0
 fi
 
@@ -174,7 +235,7 @@ if [ "$CMD" = "delete" ]; then
   WORKTREE_QUERY=""
   LEGACY_QUERY=""
   USED_W=0
-  FORCE_DELETE=0
+  FORCE_DELETE=1
   BRANCH_NAME=""
 
   while [[ $# -gt 0 ]]; do
@@ -272,6 +333,29 @@ if [ "$CMD" = "delete" ]; then
 
   if ! confirm "Are you sure?"; then
     exit 0
+  fi
+
+  # Remove dev container and volume before deleting the worktree
+  if command -v docker >/dev/null 2>&1; then
+    ABS_PATH=$(cd "$PATH_DIR" && pwd)
+    FOLDER_BASENAME=$(basename "$ABS_PATH")
+
+    CONTAINER_ID=$(docker ps -a \
+      --filter "label=devcontainer.local_folder=${ABS_PATH}" \
+      --format "{{.ID}}")
+
+    if [ -n "$CONTAINER_ID" ]; then
+      echo "🐳 Removing dev container..."
+      docker rm -f "$CONTAINER_ID"
+      echo "✅ container removed"
+    fi
+
+    VOLUME_NAME="pam-frontend-node_modules-${FOLDER_BASENAME}"
+    if docker volume inspect "$VOLUME_NAME" >/dev/null 2>&1; then
+      echo "📦 Removing volume ${VOLUME_NAME}..."
+      docker volume rm "$VOLUME_NAME"
+      echo "✅ volume removed"
+    fi
   fi
 
   REMOVE_ARGS=()
@@ -544,7 +628,9 @@ if [ "$CMD" = "merge-into" ]; then
   (
     cd "$PATH_DIR" || exit 1
 
-    git fetch origin || exit 1
+    echo "🔄 Updating source branch: $SOURCE_BRANCH..."
+    git fetch origin "$SOURCE_BRANCH" || exit 1
+    git checkout "$SOURCE_BRANCH" && git pull origin "$SOURCE_BRANCH" && git checkout - || exit 1
     git merge "origin/$SOURCE_BRANCH" || exit 1
   )
 

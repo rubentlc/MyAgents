@@ -72,8 +72,16 @@ description: "Code quality standards applied to all agents and code generation. 
 - Inject dependencies through constructor or parameter, not global import.
 - Wrap third-party libraries behind a thin interface owned by this project.
 
+## TypeScript
+
+- Strict typing is mandatory. No `any`, no untyped functions.
+- **Use `interface` instead of `type` for data models.** Reserve `type` for unions, intersections, and utility aliases.
+- Model names use PascalCase (e.g. `ProjectDetail`, `ActivityRow`, `DelegationStatus`).
+- All frontend data models live in `src/models/` and are imported from that path. Always check existing models there before creating a new one.
+
 ## Structure
 
+- **Custom hooks:** extract data-fetching, data-transformation, and business logic into custom hooks. Components contain only rendering and event wiring — no inline data transformation, no derived-state calculations, no direct API calls in JSX.
 - **Frontend (`pam-frontend`):** follow the existing Vite + React + Redux Toolkit structure. Components in `src/components/`, pages in `src/pages/`, RTK slices in `src/store/`.
 - **Backend (`pam-backend`):** follow the microservice pattern — resolver → handler → gRPC → Integration.Shared → Dynamics/external. Each service owns its GraphQL schema.
 - Prefer small focused modules over god files.

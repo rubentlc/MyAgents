@@ -31,6 +31,21 @@ Use `pam-ai` as the operational layer (prompts, skills, MCP and automation) and 
 - **Auth**: Negotiate at Gateway only; downstream services trust forwarded headers
 - **For backend tasks**: invoke `pam-be-engineer` agent or follow `pam-backend.instructions.md`
 
+## TypeScript Conventions
+
+- Strict typing is mandatory. No `any`, no untyped functions.
+- **Use `interface` instead of `type` for data models.** Reserve `type` for unions, intersections, and utility aliases.
+- Model names use PascalCase (e.g. `ProjectDetail`, `ActivityRow`, `DelegationStatus`).
+- All frontend data models live in `src/models/`. Always check existing models there before creating a new one.
+
+## Frontend Pattern — Custom Hooks for Business Logic
+
+**Do not leave components dirty with data-handling logic.** Extract data-fetching, data-transformation, and business logic into custom hooks. Components contain only rendering and event wiring.
+
+- Name hooks after the business concern: `useProjectList`, `useActivityForm`, `useDelegationStatus`.
+- Keep transformation logic (mapping, filtering, deriving display state) out of JSX and out of Redux selectors when it belongs to a single component flow — put it in the hook.
+- A hook that grows beyond ~30 lines of logic is a signal to split it.
+
 ## i18n Rule — Mandatory for Any UI Work
 Whenever a task touches user-visible text in `pam-frontend`:
 1. Load `pam-ai/.github/skills/pam-i18n-refactor/SKILL.md` **before** writing any component.

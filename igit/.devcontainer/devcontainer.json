@@ -1,0 +1,58 @@
+{
+    "name": "PAM Frontend",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+    "workspaceFolder": "/workspaces/pam-frontend",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/pam-frontend,type=bind,consistency=cached",
+
+
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": true
+        }
+    },
+
+    "customizations": {
+        "vscode": {
+            "openPaths": [
+                "/workspaces/pam-frontend/.devcontainer/workspace.code-workspace"
+            ],
+            "extensions": [
+                "GitHub.copilot",
+                "GitHub.copilot-chat",
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "ms-vscode.vscode-typescript-next",
+                "oderwat.indent-rainbow"
+
+            ],
+            "settings": {
+                "editor.formatOnSave": true,
+                "editor.defaultFormatter": "esbenp.prettier-vscode",
+                "terminal.integrated.cwd": "/workspaces/pam-frontend"
+            }
+        }
+    },
+
+    "mounts": [
+        "source=${localEnv:HOME}/Documents/Projects/Personal/MyAgents/pam-ai,target=/workspaces/pam-ai,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/Documents/Projects/Personal/MyAgents/mcp-servers,target=/workspaces/mcp-servers,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/igit,target=/usr/local/igit,type=bind,consistency=cached",
+        "source=pam-frontend-node_modules-${localWorkspaceFolderBasename},target=/workspaces/pam-frontend/node_modules,type=volume",
+        "source=${localEnv:HOME}/Documents/Projects/ICRC/pam-frontend/.git,target=/Users/rcosta03/Documents/Projects/ICRC/pam-frontend/.git,type=bind,consistency=cached"
+    ],
+
+    "remoteEnv": {
+        "PATH": "/usr/local/igit:${containerEnv:PATH}"
+    },
+
+    "forwardPorts": [3000],
+    "portsAttributes": {
+        "3000": {
+            "label": "PAM Frontend (Vite)",
+            "onAutoForward": "openBrowser"
+        }
+    },
+
+    "postCreateCommand": "bash .devcontainer/post-create.sh",
+    "postAttachCommand": "zsh"
+}
