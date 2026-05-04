@@ -436,11 +436,13 @@ fi
 # ----------------------------
 if [ "$CMD" = "commit" ]; then
   WORKTREE_QUERY=""
+  USED_W=0
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
       -w)
         WORKTREE_QUERY="$2"
+        USED_W=1
         shift 2
         ;;
       *)
@@ -456,7 +458,45 @@ if [ "$CMD" = "commit" ]; then
     exit 1
   fi
 
-  PATH_DIR=$(resolve_worktree "$WORKTREE_QUERY")
+  if [ "$USED_W" -eq 1 ]; then
+    PATH_DIR=$(resolve_worktree "$WORKTREE_QUERY")
+  else
+    if ! command -v fzf >/dev/null 2>&1; then
+      echo "❌ fzf is required for interactive worktree selection"
+      echo "Install fzf or use: igit commit -w <worktree> <message>"
+      exit 1
+    fi
+
+    WORKTREE_SELECTION=$(git worktree list --porcelain \
+      | awk '
+          /^worktree / {
+            path=$2
+            label=path
+            if (path ~ /\/worktree\//) {
+              sub(/^.*\/worktree\//, "", label)
+            }
+            print label "\t" path
+          }
+        ')
+
+    if [ -z "$WORKTREE_SELECTION" ]; then
+      echo "❌ no worktrees found"
+      exit 1
+    fi
+
+    PICK=$(printf "%s\n" "$WORKTREE_SELECTION" | fzf \
+      --height=40% \
+      --layout=reverse \
+      --prompt="Select worktree > " \
+      --with-nth=1,2)
+
+    if [ -z "$PICK" ]; then
+      echo "❌ canceled"
+      exit 1
+    fi
+
+    PATH_DIR=$(printf "%s" "$PICK" | awk -F '\t' '{print $NF}')
+  fi
 
   if [ -z "$PATH_DIR" ]; then
     echo "❌ worktree not found"
