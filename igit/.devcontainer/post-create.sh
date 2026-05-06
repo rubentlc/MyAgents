@@ -21,7 +21,5 @@ else
     npm install --verbose
 fi
 
-rm -f /workspaces/pam-frontend/.npmrc
-
 echo "Dev container ready!"
 echo "To start: npm start  (or pnpm start)"

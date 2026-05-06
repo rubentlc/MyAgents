@@ -62,7 +62,7 @@ if [[ "$CMD" == "feature" || "$CMD" == "hotfix" || "$CMD" == "bugfix" || "$CMD" 
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --base)
+      --base|-b)
         BASE="$2"
         shift 2
         ;;
@@ -73,7 +73,7 @@ if [[ "$CMD" == "feature" || "$CMD" == "hotfix" || "$CMD" == "bugfix" || "$CMD" 
     esac
   done
 
-  NAME=$(normalize_name "${ARGS[*]}")
+  NAME="${ARGS[*]}"
 
   BRANCH="$TYPE/$NAME"
   PATH_DIR="$FEATURE_DIR/$BRANCH"
@@ -94,14 +94,14 @@ if [[ "$CMD" == "feature" || "$CMD" == "hotfix" || "$CMD" == "bugfix" || "$CMD" 
     exit 0
   fi
 
-  echo "🔄 Updating base branch: $BASE..."
-  git fetch origin "$BASE" && git checkout "$BASE" && git pull origin "$BASE"
+  echo "🔄 Fetching base branch: $BASE..."
+  git fetch origin "$BASE"
   if [ $? -ne 0 ]; then
-    echo "❌ failed to update base branch"
+    echo "❌ failed to fetch base branch"
     exit 1
   fi
 
-  git worktree add -b "$BRANCH" "$PATH_DIR" "$BASE"
+  git worktree add --no-track -b "$BRANCH" "$PATH_DIR" "origin/$BASE"
 
   echo "✅ created"
 
@@ -398,14 +398,6 @@ if [ "$CMD" = "delete" ]; then
         echo "⚠️ local branch delete failed: $BRANCH_NAME"
         echo "$LOCAL_DELETE_OUTPUT"
       fi
-
-      REMOTE_DELETE_OUTPUT=$(git push --force origin ":refs/heads/$BRANCH_NAME" 2>&1)
-      if [ $? -eq 0 ]; then
-        echo "✅ remote branch removed (force): $BRANCH_NAME"
-      else
-        echo "⚠️ remote branch delete failed (force): $BRANCH_NAME"
-        echo "$REMOTE_DELETE_OUTPUT"
-      fi
     else
       LOCAL_DELETE_OUTPUT=$(git branch -d "$BRANCH_NAME" 2>&1)
       if [ $? -eq 0 ]; then
@@ -414,14 +406,29 @@ if [ "$CMD" = "delete" ]; then
         echo "⚠️ local branch delete failed: $BRANCH_NAME"
         echo "$LOCAL_DELETE_OUTPUT"
       fi
+    fi
 
-      REMOTE_DELETE_OUTPUT=$(git push origin --delete "$BRANCH_NAME" 2>&1)
-      if [ $? -eq 0 ]; then
-        echo "✅ remote branch removed: $BRANCH_NAME"
+    read -r -p "Remove remote branch too? (Y/N): " REMOTE_CONFIRM
+    if [ "$REMOTE_CONFIRM" = "Y" ] || [ "$REMOTE_CONFIRM" = "y" ]; then
+      if [ "$FORCE_DELETE" -eq 1 ]; then
+        REMOTE_DELETE_OUTPUT=$(git push --force origin ":refs/heads/$BRANCH_NAME" 2>&1)
+        if [ $? -eq 0 ]; then
+          echo "✅ remote branch removed (force): $BRANCH_NAME"
+        else
+          echo "⚠️ remote branch delete failed (force): $BRANCH_NAME"
+          echo "$REMOTE_DELETE_OUTPUT"
+        fi
       else
-        echo "⚠️ remote branch delete failed: $BRANCH_NAME"
-        echo "$REMOTE_DELETE_OUTPUT"
+        REMOTE_DELETE_OUTPUT=$(git push origin --delete "$BRANCH_NAME" 2>&1)
+        if [ $? -eq 0 ]; then
+          echo "✅ remote branch removed: $BRANCH_NAME"
+        else
+          echo "⚠️ remote branch delete failed: $BRANCH_NAME"
+          echo "$REMOTE_DELETE_OUTPUT"
+        fi
       fi
+    else
+      echo "ℹ️ remote branch kept: $BRANCH_NAME"
     fi
   else
     echo "ℹ️ branch delete skipped: $BRANCH_NAME"

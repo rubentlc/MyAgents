@@ -9,10 +9,10 @@ _igit() {
 
     names=(feature hotfix bugfix spike)
     descs=(
-      'feature     -- igit feature <number?> <name?> [-b? <branch>]'
-      'hotfix      -- igit hotfix <number?> <name?> [-b? <branch>]'
-      'bugfix      -- igit bugfix <number?> <name?> [-b? <branch>]'
-      'spike       -- igit spike <number?> <name?> [-b? <branch>]'
+      'feature     -- igit feature <name> [-b? <branch>]'
+      'hotfix      -- igit hotfix <name> [-b? <branch>]'
+      'bugfix      -- igit bugfix <name> [-b? <branch>]'
+      'spike       -- igit spike <name> [-b? <branch>]'
     )
     compadd -l -X 'Create new worktree and switch to it' -V 'create' -d descs -- "${names[@]}"
 

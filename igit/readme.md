@@ -1,3 +1,6 @@
+0. criar um ficheiro no ~/.npmrc com o conteudo necessario
+
+
 igit
 Guia de instalação e configuração do igit.
 
@@ -50,3 +53,5 @@ source ~/.zshrc
 Verifica se tudo está operacional executando:
 
 igit list
+
+
