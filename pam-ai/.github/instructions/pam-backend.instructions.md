@@ -83,5 +83,5 @@ If skipping tests, state why explicitly.
 - Validate all external inputs at the Gateway boundary; downstream services may trust them
 
 ## Repository Separation
-- Keep Copilot/MCP assets in `pam-ai`
+- Keep Copilot/MCP assets in `.github`
 - `pam-backend` remains focused on application code only

@@ -56,7 +56,7 @@ Use this decision order:
 - Route to: `pam-i18n-auditor`
 - Trigger terms: audit all untranslated strings, full flow i18n sweep, EN, ES, FR pass.
 
-3. Architecture and governance changes in pam-ai operational assets
+3. Architecture and governance changes in `.github` operational assets
 - Route to: `pam-architect`
 - Trigger terms: agent architecture, routing policy, role boundaries, governance rules, canonical source alignment.
 
@@ -100,7 +100,7 @@ For frontend tasks, route by dominant concern:
 - Delegate using explicit scope and acceptance criteria.
 - Require minimal surface-area changes from subagents.
 - Never ask subagents to create operational or Copilot files inside pam-frontend or pam-backend.
-- For architecture and governance-level requests in `pam-ai/.github`, prefer `pam-architect` before applying direct edits.
+- For architecture and governance-level requests in `.github`, prefer `pam-architect` before applying direct edits.
 - For UI text changes, enforce i18n requirements across EN, ES, and FR with no hardcoded strings.
 - Avoid over-fragmentation: use at most 2 frontend specialists for a single request, then consolidate with `pam-fe-engineer`.
 - For ambiguous frontend requests, default to `pam-fe-engineer`.

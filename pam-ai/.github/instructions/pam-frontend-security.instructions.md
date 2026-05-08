@@ -1,6 +1,6 @@
 ---
 applyTo: "**/*"
-description: "Use when triaging or fixing Checkmarx/security findings in pam-frontend while keeping all Copilot/MCP assets in pam-ai."
+description: "Use when triaging or fixing Checkmarx/security findings in pam-frontend while keeping all Copilot/MCP assets in `.github`."
 ---
 
 # PAM Frontend Security Execution Rules
@@ -30,5 +30,5 @@ For each batch, provide:
 - Residual risks and follow-up actions
 
 ## Repository Separation
-- Do not add `.github` Copilot/MCP artifacts to `pam-frontend`.
-- Keep operational assets in `pam-ai`.
+- Do not add Copilot/MCP artifacts outside `.github`.
+- Keep operational assets in `.github`.

@@ -1,16 +1,16 @@
 # PAM AI Workspace Instructions
 
 ## Goal
-Use `pam-ai` as the operational layer (prompts, skills, MCP and automation) and keep `pam-frontend` and `pam-backend` focused on application code.
+Use `.github` in this repository as the operational layer (prompts, skills, hooks, MCP and automation) and keep `pam-frontend` and `pam-backend` focused on application code.
 
 ## Hard Boundaries
-- Do not create MCP/Copilot setup files inside `pam-frontend` or `pam-backend`.
-- Keep prompts, skills, agents, and MCP server artifacts inside `pam-ai`.
+- Keep MCP/Copilot setup files under `.github` in this repository.
+- Keep prompts, skills, agents, and MCP server artifacts inside `.github`.
 - Treat `pam-frontend` and `pam-backend` as code-only unless the user explicitly requests otherwise.
 
 ## Default Workflow
 1. Discover scope in `pam-frontend` or `pam-backend`.
-2. Use assets from `pam-ai/.github/prompts` and `pam-ai/.github/skills` for triage and planning.
+2. Use assets from `.github/prompts` and `.github/skills` for triage and planning.
 3. Apply minimal, traceable code changes in the target project.
 4. Validate with relevant commands (`build`, `test`, `lint`) when available.
 5. Report findings and residual risk clearly.
@@ -48,13 +48,20 @@ Use `pam-ai` as the operational layer (prompts, skills, MCP and automation) and 
 
 ## i18n Rule — Mandatory for Any UI Work
 Whenever a task touches user-visible text in `pam-frontend`:
-1. Load `pam-ai/.github/skills/pam-i18n-refactor/SKILL.md` **before** writing any component.
+1. Load `.github/skills/pam-i18n-refactor/SKILL.md` **before** writing any component.
 2. Treat that skill as the **canonical source** for i18n implementation rules (namespaces, hooks, locale registration, `Trans`, typing).
 3. For mass i18n audits (scanning a whole flow for untranslated strings), invoke the `pam-i18n-auditor` agent manually.
 
+### Untranslated Keys
+The following keys **must NOT be translated**. Use English values in all locales (EN, ES, FR):
+- `populatedPlace` → "Populated Place"
+- `recipientPlace` → "Recipient Place"
+
+These are system/data classification terms that must remain consistent across all languages. See `/memories/repo/pam-frontend-untranslated-keys.md` for details.
+
 ## Security and Secrets
 - Never print or commit secrets.
-- Prefer `.env` in `pam-ai/checkmarx-server` for local credentials.
+- Prefer local `.env` files in the Checkmarx tooling workspace (for example `mcp-servers/checkmarx`) for credentials.
 - Avoid duplicating credentials across folders.
 
 ## NPMRC Drift Rule

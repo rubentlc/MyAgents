@@ -29,14 +29,17 @@
             "settings": {
                 "editor.formatOnSave": true,
                 "editor.defaultFormatter": "esbenp.prettier-vscode",
-                "terminal.integrated.cwd": "/workspaces/pam-frontend"
+                "terminal.integrated.cwd": "/workspaces/pam-frontend",
+                "explorer.excludeGitIgnore": false,
+                "files.exclude": {
+                    "**/.github": false,
+                    "**/mcp-servers": false
+                }
             }
         }
     },
 
     "mounts": [
-        "source=${localEnv:HOME}/Documents/Projects/Personal/MyAgents/pam-ai,target=/workspaces/pam-ai,type=bind,consistency=cached",
-        "source=${localEnv:HOME}/Documents/Projects/Personal/MyAgents/mcp-servers,target=/workspaces/mcp-servers,type=bind,consistency=cached",
         "source=${localEnv:HOME}/igit,target=/usr/local/igit,type=bind,consistency=cached",
         "source=pam-frontend-node_modules-${localWorkspaceFolderBasename},target=/workspaces/pam-frontend/node_modules,type=volume",
         "source=${localEnv:HOME}/Documents/Projects/ICRC/pam-frontend/.git,target=/Users/rcosta03/Documents/Projects/ICRC/pam-frontend/.git,type=bind,consistency=cached",

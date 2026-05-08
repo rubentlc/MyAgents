@@ -10,6 +10,17 @@ sudo chown -R node:node /workspaces/pam-frontend/node_modules 2>/dev/null || tru
 # Activar pnpm via corepack se o lockfile existir, caso contrário usar npm
 cd /workspaces/pam-frontend
 
+# In a worktree, .git is a pointer file; use git-path so the exclude is resolved correctly.
+GIT_EXCLUDE_FILE="$(git rev-parse --git-path info/exclude)"
+mkdir -p "$(dirname "$GIT_EXCLUDE_FILE")"
+touch "$GIT_EXCLUDE_FILE"
+
+for pattern in ".github/" "mcp-servers/"; do
+    if ! grep -qxF "$pattern" "$GIT_EXCLUDE_FILE"; then
+        echo "$pattern" >> "$GIT_EXCLUDE_FILE"
+    fi
+done
+
 if [ -f "pnpm-lock.yaml" ]; then
     echo "==> Activating pnpm..."
     corepack enable

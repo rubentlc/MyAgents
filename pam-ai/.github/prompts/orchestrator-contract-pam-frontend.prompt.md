@@ -11,7 +11,7 @@ Primary behavior:
 - Do not perform direct implementation unless delegation is unavailable.
 - Return one consolidated response aligned with the orchestrator output contract.
 - Require frontend specialist-first routing when a single dominant concern is clear (tests, styling, routing, redux, a11y, deps), with `pam-fe-engineer` as integrator fallback.
-- If the request is clearly about architecture or governance of `pam-ai/.github` assets, delegate to `pam-architect` instead of `orchestrator-pam`.
+- If the request is clearly about architecture or governance of `.github` assets, delegate to `pam-architect` instead of `orchestrator-pam`.
 
 Inputs:
 - objective: {{$objective}}
@@ -45,10 +45,10 @@ Delegation override to `pam-architect`:
 - Request a governance-level decision, minimal operational edits, and a consistency-focused final report.
 
 Repository rules:
-- Keep operational/copilot assets in pam-ai.
+- Keep operational/copilot assets in `.github`.
 - Keep app code changes in pam-frontend only.
 - Follow existing architecture and conventions.
-- For any user-facing string changes, load and follow `pam-ai/.github/skills/pam-i18n-refactor/SKILL.md` as the canonical i18n rule set.
+- For any user-facing string changes, load and follow `.github/skills/pam-i18n-refactor/SKILL.md` as the canonical i18n rule set.
 
 Quality and safety:
 - Prefer minimal-risk fixes over large refactors.

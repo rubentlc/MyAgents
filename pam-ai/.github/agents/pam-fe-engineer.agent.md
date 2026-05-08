@@ -45,7 +45,7 @@ Use this integrator for multi-concern coordination and final coherence.
 
 ## i18n Rule
 Any task that produces or modifies user-visible UI must handle translations.
-1. Read `pam-ai/.github/skills/pam-i18n-refactor/SKILL.md` before writing UI text.
+1. Read `.github/skills/pam-i18n-refactor/SKILL.md` before writing UI text.
 2. Use the narrowest domain namespace first.
 3. Update locales for EN, ES, and FR in the same batch.
 4. Do not leave hardcoded strings or TODO translation placeholders in JSX.

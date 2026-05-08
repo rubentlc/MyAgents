@@ -110,6 +110,14 @@ if [[ "$CMD" == "feature" || "$CMD" == "hotfix" || "$CMD" == "bugfix" || "$CMD" 
     cp -r "$MAIN_PATH/.devcontainer" "$PATH_DIR/.devcontainer"
     echo "📋 .devcontainer copied"
   fi
+  if [ -d "$MAIN_PATH/.github" ]; then
+    if [ ! -e "$PATH_DIR/.github" ]; then
+      cp -r "$MAIN_PATH/.github" "$PATH_DIR/.github"
+      echo "📋 .github copied"
+    else
+      echo "ℹ️ .github already exists in destination"
+    fi
+  fi
   echo ""
 
   read -p "Do you want to open the new worktree? [Y/n]: " INSTALL_RESP

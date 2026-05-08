@@ -35,5 +35,5 @@ Canonical workflow behavior lives in the agent definitions, prompt wrappers, and
 - Use direct execution only for clearly small, single-concern tasks.
 
 ## Shared Rules
-- Operational assets stay in `pam-ai`.
+- Operational assets stay in `.github`.
 - `pam-frontend` and `pam-backend` remain focused on app code.

@@ -3,15 +3,13 @@
         {
             "name": "pam-frontend",
             "path": "/workspaces/pam-frontend"
-        },
-        {
-            "name": "pam-ai",
-            "path": "/workspaces/pam-ai"
-        },
-        {
-            "name": "mcp-servers",
-            "path": "/workspaces/mcp-servers"
         }
     ],
-    "settings": {}
+    "settings": {
+        "explorer.excludeGitIgnore": false,
+        "files.exclude": {
+            "**/.github": false,
+            "**/mcp-servers": false
+        }
+    }
 }
